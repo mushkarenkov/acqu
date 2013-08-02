@@ -7,7 +7,7 @@
 #include "TLine.h"
 #include "TMarker.h"
 #include "TH2F.h"
-#include "/home/susanna/fairsoft_sep12/sep12/tools/root/include/TMinuit.h"
+#include <TMinuit.h>
 // AcquRoot
 #include "TA2UserAnalysis.h"
 #include "TA2CentralApparatus.h"
