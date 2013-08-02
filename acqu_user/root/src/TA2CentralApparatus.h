@@ -25,6 +25,8 @@ class TA2CentralTrack;
 class TA2MwpcTrack;
 class TA2Particle;
 
+void fcnStraightLine(Int_t &, Double_t *, Double_t &, Double_t*, Int_t); 
+
 class TA2CentralApparatus : public TA2Apparatus {
 public:
   Bool_t fWait;
@@ -93,7 +95,9 @@ public:
   virtual Double_t CalcEhitPid(const Int_t, const TVector3&, const TVector3&) const;
   virtual Double_t CalcEtrackMwpc(const Int_t, const Int_t) const;
   virtual Double_t CalcEclNaI(const Int_t) const;
-  
+  Int_t MinuitFit(Int_t, Double_t*, Double_t*, Double_t*, Double_t[2]);
+  void SetupFitVector(Int_t, Double_t*, Double_t*, TMatrixT<Double_t>&);
+
 // Tracks
 protected:
   Int_t			  fNtracks;

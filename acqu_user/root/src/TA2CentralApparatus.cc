@@ -7,6 +7,7 @@
 #include "TLine.h"
 #include "TMarker.h"
 #include "TH2F.h"
+#include "/home/susanna/fairsoft_sep12/sep12/tools/root/include/TMinuit.h"
 // AcquRoot
 #include "TA2UserAnalysis.h"
 #include "TA2CentralApparatus.h"
@@ -22,7 +23,7 @@
 // apparatus may contain
 enum { ECB_PlasticPID, ECB_CalArray, ECB_CylMWPC, ECB_TA2CylMwpc};
 static Map_t kValidDetectors[] = {
-  {"TA2PlasticPID",	ECB_PlasticPID},
+  {"TA2PlasticPID",     ECB_PlasticPID},
   {"TA2CylMwpc",	ECB_TA2CylMwpc},
   {"TA2CalArray",	ECB_CalArray},
   {NULL, 		-1}
@@ -32,12 +33,12 @@ static Map_t kValidDetectors[] = {
 enum { ECBAngleLimits = 1000, ECBParticleCuts,
        ECBUseTracksBestMwpc, ECBDroop, ECBTrackLimits };
 static const Map_t kCBKeys[] = {
-  {"AngleLimits:",      ECBAngleLimits},
-  {"ParticleID-Cut:",   ECBParticleCuts},
-  {"UseBestMwpcTracks:",ECBUseTracksBestMwpc},
+  {"AngleLimits:",       ECBAngleLimits},
+  {"ParticleID-Cut:",    ECBParticleCuts},
+  {"UseBestMwpcTracks:", ECBUseTracksBestMwpc},
   {"Droop:",             ECBDroop}, // TODO It would be better to move it to TA2PlasticPID
-  {"TrackLimits:",      ECBTrackLimits},
-  {NULL,            -1}
+  {"TrackLimits:",       ECBTrackLimits},
+  {NULL,                 -1}
 };
 
   // needed for the display
@@ -697,6 +698,28 @@ void TA2CentralApparatus::MakeTracksTrue(const map<Double_t,Int_t> *tracksMwpc, 
     for (Int_t iClNaI=0; iClNaI<fNclNaI; ++iClNaI)
     {
       if (IsUsedClNaI(iClNaI)) continue; // check if the clNaI was used already
+
+      // Susanna - begin
+      Double_t x0 = fMwpc->GetInters(0,fTracksMwpc[iTrMwpc].GetIinter(0))->GetPosition()->X();
+      Double_t y0 = fMwpc->GetInters(0,fTracksMwpc[iTrMwpc].GetIinter(0))->GetPosition()->Y();
+      Double_t x1 = fMwpc->GetInters(1,fTracksMwpc[iTrMwpc].GetIinter(1))->GetPosition()->X();
+      Double_t y1 = fMwpc->GetInters(1,fTracksMwpc[iTrMwpc].GetIinter(1))->GetPosition()->Y();
+      Double_t xcb = fPositionsNaI[iClNaI].X();
+      Double_t ycb = fPositionsNaI[iClNaI].Y();
+      Double_t alpha[3] = {TMath::ATan2(x0,y0), TMath::ATan2(x1,y1), TMath::ATan2(xcb,ycb)};
+      Double_t radii[3] = {innerMWPC, outerMWPC, TMath::Sqrt(xcb*xcb + ycb*ycb)};
+      // pinit[0] = delta0 = 0; pinit[1] = phi0 = alpha[0];
+      // as if the track goes through (0., 0.)
+      Double_t pinit[2] = {0, alpha[0]};
+      Double_t pfit[2];
+      Int_t dim = 3;
+      Int_t fit = MinuitFit(dim, alpha, radii, pinit, pfit);
+      if (!fit)
+	cout << "****** UNSUCCESSFUL FIT :( ******" << endl;
+      else 
+	cout << "****** SUCCESSFUL FIT!!! Fit parameters are: " << pfit[0] << " and " << pfit[1] << endl;
+      // Susanna - end
+
       phi = fTracksMwpc[iTrMwpc].Angle(fPositionsNaI[iClNaI]);
       if (phi > fMaxPhiMwpcNaI) continue;
       mapPhiMwpcNaI[phi] = make_pair(iTrMwpc,iClNaI);
@@ -1956,4 +1979,68 @@ void TA2CentralApparatus::InitGeometry()
   c3->Update();
   c3->Modified();
 
+}
+
+
+//________________________________________________________________________________________
+Int_t TA2CentralApparatus::MinuitFit(Int_t n, Double_t *alpha, Double_t *r, Double_t *pinit, Double_t pfit[2]) {
+
+  TMinuit minimizer(2);
+  minimizer.SetPrintLevel(-1);
+
+  TMatrixT<Double_t> fitvector;
+  SetupFitVector(n, alpha, r, fitvector);
+
+  minimizer.SetFCN(fcnStraightLine);
+  minimizer.DefineParameter(0, "p0", pinit[0], 0.1, 0., 0.);
+  minimizer.DefineParameter(1, "p1", pinit[1], 0.1, 0., 0.);
+  minimizer.SetObjectFit(&fitvector);
+
+  minimizer.SetMaxIterations(500);
+
+  Int_t checkminuit;
+  checkminuit = minimizer.Migrad();
+
+  Double_t chisquare, errpfit[2];
+  minimizer.GetParameter(0, pfit[0], errpfit[0]);
+  minimizer.GetParameter(1, pfit[1], errpfit[1]);
+
+  pinit[0] = pfit[0]; pinit[1] = pfit[1];
+
+  if (checkminuit == 0)
+    return 1;
+  else 
+    return 0;
+
+}
+
+
+//________________________________________________________________________________________
+void fcnStraightLine(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int_t iflag) {
+
+  TMatrixT<Double_t> *mtx = (TMatrixT<Double_t> *) gMinuit->GetObjectFit();
+
+  f = 0.;
+  Double_t chisquare = 0.;
+  Int_t counter = mtx->GetNrows();
+
+  for (Int_t i = 0; i < counter; i++) 
+    {
+      if (mtx[0][i][2] != 0)
+	chisquare += pow(mtx[0][i][0] - par[1]-TMath::ASin(par[0]/mtx[0][i][1]),2) / pow(mtx[0][i][2],2);
+    }
+  
+  f = chisquare;
+}
+
+
+
+//________________________________________________________________________________________
+void TA2CentralApparatus::SetupFitVector(Int_t n, Double_t *alpha, Double_t *R, TMatrixT<Double_t> &fitvect) {
+
+  for (int i=0; i<n; i++) {
+    fitvect[i][0] = alpha[i];
+    fitvect[i][2] = R[i];
+    fitvect[i][3] = 1./(TMath::Sqrt(3.)*R[i]);
+  }
 }
