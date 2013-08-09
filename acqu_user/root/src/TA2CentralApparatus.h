@@ -34,91 +34,94 @@ public:
   
 // Parameters
 protected:
-  static const Int_t    kNullHit   = static_cast<Int_t>(ENullHit);
+  static const Int_t kNullHit = static_cast<Int_t>(ENullHit);
   static const Double_t kNullFloat = ENullFloat; // TODO Think better about global consts
-  Bool_t	 fUseTracksBestMwpc;
-  Int_t		 fMaxTrack;	// Max tracks number
-  Double_t	 fFactorTrackLengthNaI; // TEST
-  Double_t	 fMaxPhiMwpcNaI;
-  Double_t	 fMaxPhiTrackPid;
-  Double_t	 fMaxPhiPidNaI;
-  Double_t	 fMaxPhiMwpcInterNaI;
-  Double_t	 fMaxPhiMwpcInterPid;  
-  Double_t	 fLimitsPsVertex[3];
-  Double_t	 fLengthPid;// TODO Must be moved into TA2PlasticPID
-  Int_t	 	 fNpointsDroopPid;// TODO Must be moved into TA2PlasticPID
+  Bool_t	fUseTracksBestMwpc;
+  Int_t	fMaxTrack;	// Max tracks number
+  Double_t	fFactorTrackLengthNaI; // TEST
+  Double_t	fMaxPhiMwpcNaI;
+  Double_t	fMaxPhiTrackPid;
+  Double_t	fMaxPhiPidNaI;
+  Double_t	fMaxPhiMwpcInterNaI;
+  Double_t	fMaxPhiMwpcInterPid;
+  Double_t	fLimitsPsVertex[3];
+  Double_t	fLengthPid;// TODO Must be moved into TA2PlasticPID
+  Int_t	fNpointsDroopPid;// TODO Must be moved into TA2PlasticPID
   Double_t	*fLostCorrPosPid;// TODO Must be moved into TA2PlasticPID
   Double_t	*fLostCorrFacPid;// TODO Must be moved into TA2PlasticPID
   //
 public:
-  virtual const Int_t	 &GetMaxTrack() const { return fMaxTrack; }
+  virtual const Int_t	&GetMaxTrack() const { return fMaxTrack; }
   virtual const Double_t &GetFactorTrackLengthNaI() const { return fFactorTrackLengthNaI; }// TEST
 
 // Detectors
 protected:
-  TA2Detector		 *fPid;		// Pointer to PID
-  Int_t			  fNhitsPid;
-  Int_t			 *fHitsPid;
-  TVector2		 *fPositionsPid;
-  Int_t			 *fIhitsPidUsed;
-  Bool_t		 *fIhitsPidNotUsed;
-  Int_t			  fNhitsPidNotUsed;
+  TA2Detector	*fPid;	// Pointer to PID
+  Int_t	fNhitsPid;
+  Int_t	*fHitsPid;
+  TVector2	*fPositionsPid;
+  Int_t	*fIhitsPidUsed;
+  Bool_t	*fIhitsPidNotUsed;
+  Int_t	fNhitsPidNotUsed;
   //
-  TA2CylMwpc		     *fMwpc;	// Pointer to MWPC
-  Int_t			      fNchambers;
-  const Double_t	     *fRmwpc;
-  const TA2MwpcTrack	     *fTracksMwpc;
-  const map<Double_t,Int_t>  *fTracksTrueMwpc;
-  const map<Double_t,Int_t>  *fTracksTrueCandidateMwpc;
-  const map<Double_t,Int_t>  *fTracksCandidateMwpc;
-  const Int_t		     *fNintersTrueMwpc;
-  const Int_t		    **fIintersTrueMwpc;
-  const Int_t		     *fNintersCandidateMwpc;
-  const Int_t		    **fIintersCandidateMwpc;
+  TA2CylMwpc	*fMwpc;	// Pointer to MWPC
+  Int_t	fNchambers;
+  const Double_t	*fRmwpc;
+  const TA2MwpcTrack	*fTracksMwpc;
+  const map<Double_t,Int_t> *fTracksTrueMwpc;
+  const map<Double_t,Int_t> *fTracksTrueCandidateMwpc;
+  const map<Double_t,Int_t> *fTracksCandidateMwpc;
+  const Int_t	*fNintersTrueMwpc;
+  const Int_t	**fIintersTrueMwpc;
+  const Int_t	*fNintersCandidateMwpc;
+  const Int_t	**fIintersCandidateMwpc;
   //
-  TA2CalArray		 *fNaI;		// Pointer to NaI
-  Int_t			  fNclNaI;
-  HitCluster_t		**fClNaI;
-  UInt_t		 *fIdClNaI;     // Indices of hit clusters
-  TVector3		 *fPositionsNaI;
-  Bool_t		 *fUsedClNaI;
+  TA2CalArray	*fNaI;	// Pointer to NaI
+  Int_t	fNclNaI;
+  HitCluster_t	**fClNaI;
+  UInt_t	*fIdClNaI; // Indices of hit clusters
+  TVector3	*fPositionsNaI;
+  Bool_t	*fUsedClNaI;
 public:
   virtual const TA2CalArray	*GetNaI() const { return fNaI; }
   virtual const TA2Detector	*GetPid() const { return fPid; }
   virtual const TA2CylMwpc	*GetMwpc() const { return fMwpc; }
   virtual const TVector2	*GetPositionsPid(const Int_t i) const { return fPositionsPid+i; }
   virtual const TVector3	*GetPositionsNaI(const Int_t i) const { return fPositionsNaI+i; }
-  virtual void			 SetUsedClNaI(const Int_t i) { fUsedClNaI[i] = kTRUE; }
-  virtual Bool_t		 IsUsedClNaI(const Int_t i) const { return fUsedClNaI[i]; }
-  virtual void			 SetUsedHitPid(const Int_t i) { fIhitsPidUsed[i]++; }
-  virtual Bool_t		 IsUsedHitPid(const Int_t i) const { return fIhitsPidUsed[i]; }
+  virtual void	SetUsedClNaI(const Int_t i) { fUsedClNaI[i] = kTRUE; }
+  virtual Bool_t	IsUsedClNaI(const Int_t i) const { return fUsedClNaI[i]; }
+  virtual void	SetUsedHitPid(const Int_t i) { fIhitsPidUsed[i]++; }
+  virtual Bool_t	IsUsedHitPid(const Int_t i) const { return fIhitsPidUsed[i]; }
   virtual Double_t CalcEhitPid(const Int_t, const TVector3&, const TVector3&) const;
   virtual Double_t CalcEtrackMwpc(const Int_t, const Int_t) const;
   virtual Double_t CalcEclNaI(const Int_t) const;
+
+  // Minuit stuff
   Int_t MinuitFit(Int_t, Double_t*, Double_t*, Double_t*, Double_t[2]);
   void SetupFitVector(Int_t, Double_t*, Double_t*, TMatrixT<Double_t>&);
-
+  Int_t fFit;
+  
 // Tracks
 protected:
-  Int_t			  fNtracks;
-  TA2CentralTrack	 *fTracks;
-  Int_t			  fNchTracks;
-  Int_t			 *fIchTracks;
-  Int_t			  fNneTracks;
-  Int_t			 *fIneTracks;
+  Int_t	fNtracks;
+  TA2CentralTrack	*fTracks;
+  Int_t	fNchTracks;
+  Int_t	*fIchTracks;
+  Int_t	fNneTracks;
+  Int_t	*fIneTracks;
   // Tracks with 2 MWPC
-  map<Double_t,pair<Int_t,Int_t> > fMapMwpcTrueTrackNaI;          // sorted array of all possible Mwpc true track & NaI cluster combinations
+  map<Double_t,pair<Int_t,Int_t> > fMapMwpcTrueTrackNaI; // sorted array of all possible Mwpc true track & NaI cluster combinations
   map<Double_t,pair<Int_t,Int_t> > fMapMwpcTrueCandidateTrackNaI; // sorted array of all possible Mwpc true-candidate track & NaI cluster combinations
-  map<Double_t,pair<Int_t,Int_t> > fMapMwpcCandidateTrackNaI;     // sorted array of all possible Mwpc candidate track & NaI cluster combinations
+  map<Double_t,pair<Int_t,Int_t> > fMapMwpcCandidateTrackNaI; // sorted array of all possible Mwpc candidate track & NaI cluster combinations
   // Tracks with 1 MWPC
-  Int_t			  fNtracksSingleMwpc;	     // # of possible tracks with a single MWPC
-  TA2CentralTrack	 *fTracksSingleMwpc;	     // array of all possible tracks with NaI claster & MWPC intersection & (Pid)
-  map<Double_t,Int_t>	  fMapMwpcTrueInterNaI;      // sorted array of all possible MWPC true intersection & NaI cluster combinations
-  map<Double_t,Int_t>	  fMapMwpcCandidateInterNaI; // sorted array of all possible MWPC candidate intersection & NaI cluster combinations
-  Int_t			  fNtracksSingleMwpcBest;    // # of the best tracks with a single MWPC which added to the fTracks
+  Int_t	fNtracksSingleMwpc;	// # of possible tracks with a single MWPC
+  TA2CentralTrack	*fTracksSingleMwpc;	// array of all possible tracks with NaI claster & MWPC intersection & (Pid)
+  map<Double_t,Int_t>	fMapMwpcTrueInterNaI; // sorted array of all possible MWPC true intersection & NaI cluster combinations
+  map<Double_t,Int_t>	fMapMwpcCandidateInterNaI; // sorted array of all possible MWPC candidate intersection & NaI cluster combinations
+  Int_t	fNtracksSingleMwpcBest; // # of the best tracks with a single MWPC which added to the fTracks
   // Not used MWPC intersections
-  Int_t			 *fNintersTrueMwpcNotUsed;	// not used true MWPC intersections
-  Int_t			 *fNintersCandidateMwpcNotUsed;	// not used candidate MWPC intersections
+  Int_t	*fNintersTrueMwpcNotUsed;	// not used true MWPC intersections
+  Int_t	*fNintersCandidateMwpcNotUsed;	// not used candidate MWPC intersections
   // For histograms
   Double_t	*fPhiMwpcTrackNaI; // [fNtracks]
   Double_t	*fPhiTrackPid; // [fNtracks]
@@ -166,45 +169,45 @@ public:
   //
   virtual const Int_t	&GetNtracksSingleMwpc() const { return fNtracksSingleMwpc; }
   virtual const Int_t	*GetNtracksSingleMwpcPtr() const { return &fNtracksSingleMwpc; }
-//   virtual const map<Double_t,Int_t> *GetMapTracksTrueSingleMwpc() const { return &fMapTracksTrueSingleMwpc; }
-//   virtual const map<Double_t,Int_t> *GetMapTracksCandidateSingleMwpc() const { return &fMapTracksCandidateSingleMwpc; }
+// virtual const map<Double_t,Int_t> *GetMapTracksTrueSingleMwpc() const { return &fMapTracksTrueSingleMwpc; }
+// virtual const map<Double_t,Int_t> *GetMapTracksCandidateSingleMwpc() const { return &fMapTracksCandidateSingleMwpc; }
   virtual const Int_t	&GetNtracksSingleMwpcBest() const { return fNtracksSingleMwpcBest; }
   virtual const Int_t	*GetNtracksSingleMwpcBestPtr() const { return &fNtracksSingleMwpcBest; }
 
 // Vertexes
 protected:
-  Int_t		 fNvertexes;
+  Int_t	fNvertexes;
   TVector3	*fVertexes;
-  Int_t	       **fIvertexes; // TODO make like in TA2CylMwpc
+  Int_t	**fIvertexes; // TODO make like in TA2CylMwpc
   // For the output hists
   Double_t	*fVert[3];	// vertex {x,y,z}
   Double_t	*fVertR;	// vertex R
   Double_t	*fTrackDist;	// distance between 2 tracks forming a given vertex
   //
-  virtual void	 MakeVertexes();
+  virtual void	MakeVertexes();
 public:
-  const Int_t	       &GetNvertexes() const { return fNvertexes; }
-  const TVector3       *GetVertexes() const { return fVertexes; }
+  const Int_t	&GetNvertexes() const { return fNvertexes; }
+  const TVector3 *GetVertexes() const { return fVertexes; }
   Int_t	GetIvertexes(const Int_t i, const Int_t j) const { return fIvertexes[i][j]; }
 
 // Particles
 protected:
-  Int_t	 *fType;
-  Int_t	 *fSize;
-  Int_t	 *fDet;
-  Int_t	 *fCentral;
+  Int_t	*fType;
+  Int_t	*fSize;
+  Int_t	*fDet;
+  Int_t	*fCentral;
   Double_t *fTime;
    
 public:
-  virtual void	 AddParticleInfo(const TA2CentralTrack&);
+  virtual void	AddParticleInfo(const TA2CentralTrack&);
   
 // Display
 public:
   Bool_t fDisplay;
   void InitGeometry();
 
-	TA2Particle* GetParticles() { return fParticleInfo; }
-	TA2Particle GetParticles(Int_t index){ return fParticleInfo[index]; }
+TA2Particle* GetParticles() { return fParticleInfo; }
+TA2Particle GetParticles(Int_t index){ return fParticleInfo[index]; }
 
 private:
   TCanvas *c, *c2, *c3;
@@ -217,16 +220,16 @@ private:
 
 //
 public:
-  TA2CentralApparatus( const char*, TA2System* );  // pass ptr to analyser
-  virtual ~TA2CentralApparatus();                  // destructor
-  virtual void		  PostInit();                    // some setup after parms read in
+  TA2CentralApparatus( const char*, TA2System* ); // pass ptr to analyser
+  virtual ~TA2CentralApparatus(); // destructor
+  virtual void	PostInit(); // some setup after parms read in
   virtual TA2DataManager *CreateChild( const char*, Int_t );
-  virtual void		  LoadVariable(  );              // display setup
-  virtual void		  Reconstruct( );                // event by event analysis
-  virtual void		  SetConfig( Char_t*, Int_t );   // setup decode in implement
-  virtual void		  Cleanup();			// reset event
-  virtual void		  DeleteArrays();		// flush local new store
-  virtual void		  MarkEndBuffers();		// Mark EndBuffer for the output arrays
+  virtual void	LoadVariable( ); // display setup
+  virtual void	Reconstruct( ); // event by event analysis
+  virtual void	SetConfig( Char_t*, Int_t ); // setup decode in implement
+  virtual void	Cleanup();	// reset event
+  virtual void	DeleteArrays();	// flush local new store
+  virtual void	MarkEndBuffers();	// Mark EndBuffer for the output arrays
   
   Int_t GetNparticle(){ return fNparticle; } // must be public, but actually base class has such a function
   
@@ -277,7 +280,7 @@ inline Double_t TA2CentralApparatus::CalcEtrackMwpc(const Int_t iInterMwpc0, con
   if (iInterMwpc0 == kNullHit && iInterMwpc1 == kNullHit) return kNullFloat;
   
   Double_t e = 0.;
-  if (iInterMwpc0 != kNullHit) e  = fMwpc->GetInters(0,iInterMwpc0)->GetAclIE();
+  if (iInterMwpc0 != kNullHit) e = fMwpc->GetInters(0,iInterMwpc0)->GetAclIE();
   if (iInterMwpc1 != kNullHit) e += fMwpc->GetInters(1,iInterMwpc1)->GetAclIE();
   if (iInterMwpc0 != kNullHit && iInterMwpc1 != kNullHit) e /= 2.;
   
@@ -309,7 +312,7 @@ inline Double_t TA2CentralApparatus::CalcEclNaI(const Int_t iClNaI) const
     }
   }
   
-  // 
+  //
   return e + e*corr;
 }
 
@@ -319,18 +322,18 @@ inline void TA2CentralApparatus::MarkEndBuffers()
   // EndBuffers
   
   // ParticleInfo
-  fType[fNparticle]    = EBufferEnd;
-  fTime[fNparticle]    = EBufferEnd;
-  fSize[fNparticle]    = EBufferEnd;
+  fType[fNparticle] = EBufferEnd;
+  fTime[fNparticle] = EBufferEnd;
+  fSize[fNparticle] = EBufferEnd;
   fCentral[fNparticle] = EBufferEnd;
-  fDet[fNparticle]     = EBufferEnd;
+  fDet[fNparticle] = EBufferEnd;
   
   //
-  fTrackType[fNtracks]  = EBufferEnd;
+  fTrackType[fNtracks] = EBufferEnd;
   fTrackTheta[fNtracks] = EBufferEnd;
-  fTrackPhi[fNtracks]   = EBufferEnd;
-  fEclNaI[fNtracks]     = EBufferEnd;
-  fEhitPid[fNtracks]    = EBufferEnd;
+  fTrackPhi[fNtracks] = EBufferEnd;
+  fEclNaI[fNtracks] = EBufferEnd;
+  fEhitPid[fNtracks] = EBufferEnd;
   fEtrackMwpc[fNtracks] = EBufferEnd;
   for (Int_t i=0; i<3; ++i)
   {
@@ -350,26 +353,27 @@ inline void TA2CentralApparatus::MarkEndBuffers()
       // //_________________________________________________________________________________
       // inline Double_t TA2CentralApparatus::GetCBMeanTime()
       // {
-	//   Double_t time = 0.0;
-	//   Int_t counter = 0;
-	//   UInt_t* id_clCal = fNaI->GetClustHit();    //Indices of hit clusters
-	//   HitCluster_t** clCal = fNaI->GetCluster(); //Pointer to cluster structs
-	//   HitCluster_t* cl;                          //Cluster struct
-	// 
-	//   for(Int_t i = 0; i<fNparticle; i++)
-	//   {
-	  //     if(fPDG_ID[i]==kGamma)
-	  //     {
-	    //      cl = clCal[id_clCal[i]];
-	    //      time = time + cl->GetTime();
-	    //      counter++;
-	    //     }
-	    //   }
-	    //   if(counter==0)
-	    //     return 0.0;
-	    //   else
-	    //     return (time/counter);
-	    // }
-	    
+// Double_t time = 0.0;
+// Int_t counter = 0;
+// UInt_t* id_clCal = fNaI->GetClustHit(); //Indices of hit clusters
+// HitCluster_t** clCal = fNaI->GetCluster(); //Pointer to cluster structs
+// HitCluster_t* cl; //Cluster struct
+//
+// for(Int_t i = 0; i<fNparticle; i++)
+// {
+// if(fPDG_ID[i]==kGamma)
+// {
+// cl = clCal[id_clCal[i]];
+// time = time + cl->GetTime();
+// counter++;
+// }
+// }
+// if(counter==0)
+// return 0.0;
+// else
+// return (time/counter);
+// }
+
 
 #endif
+

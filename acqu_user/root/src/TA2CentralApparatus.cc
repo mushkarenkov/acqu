@@ -7,7 +7,7 @@
 #include "TLine.h"
 #include "TMarker.h"
 #include "TH2F.h"
-#include <TMinuit.h>
+#include "TMinuit.h"
 // AcquRoot
 #include "TA2UserAnalysis.h"
 #include "TA2CentralApparatus.h"
@@ -23,58 +23,60 @@
 // apparatus may contain
 enum { ECB_PlasticPID, ECB_CalArray, ECB_CylMWPC, ECB_TA2CylMwpc};
 static Map_t kValidDetectors[] = {
-  {"TA2PlasticPID",     ECB_PlasticPID},
+  {"TA2PlasticPID",	ECB_PlasticPID},
   {"TA2CylMwpc",	ECB_TA2CylMwpc},
   {"TA2CalArray",	ECB_CalArray},
-  {NULL, 		-1}
+  {NULL, -1}
 };
 
 // Valid Keywords for command-line setup of CB apparatus
 enum { ECBAngleLimits = 1000, ECBParticleCuts,
        ECBUseTracksBestMwpc, ECBDroop, ECBTrackLimits };
 static const Map_t kCBKeys[] = {
-  {"AngleLimits:",       ECBAngleLimits},
-  {"ParticleID-Cut:",    ECBParticleCuts},
-  {"UseBestMwpcTracks:", ECBUseTracksBestMwpc},
-  {"Droop:",             ECBDroop}, // TODO It would be better to move it to TA2PlasticPID
-  {"TrackLimits:",       ECBTrackLimits},
-  {NULL,                 -1}
+  {"AngleLimits:", ECBAngleLimits},
+  {"ParticleID-Cut:", ECBParticleCuts},
+  {"UseBestMwpcTracks:",ECBUseTracksBestMwpc},
+  {"Droop:", ECBDroop}, // TODO It would be better to move it to TA2PlasticPID
+  {"TrackLimits:", ECBTrackLimits},
+  {NULL, -1}
 };
 
-  // needed for the display
-  const Double_t dphi = 15; // deg
-  const Double_t innerPID = 58.;  // PID
-  const Double_t outerPID = 62.;  // PID
-  const Double_t PIDlength = 500.; 
-  const Double_t innerCB = 254.;
-  const Double_t outerCB = 660.4; //360.4; 
-  const Double_t outerCB_yz = 660.4;
-  const Double_t outerCB_xz = 660.4;
-  const Double_t shortCB = 51.;
-  const Double_t longCB = 254.;
-  //   const Double_t dphiCB = 2*TMath::ASin((shortCB/2)/longCB)*kRadToDeg;
-  const Double_t dphiCB = 360./31.; // deg
-  const Double_t thetaMinCB = 21.; // deg
-  const Double_t thetaMaxCB = 159.; // deg
-  const Double_t innerMWPC = 74.;
-  const Double_t outerMWPC = 94.5;
-  const Double_t MWPClength = 650.;
-  const Double_t targetLength = 100.;
-  const Double_t targetDiameter = 21.5;
+// needed for the display
+const Double_t dphi = 15; // deg
+const Double_t innerPID = 58.; // PID
+const Double_t outerPID = 62.; // PID
+const Double_t PIDlength = 500.;
+const Double_t innerCB = 254.;
+const Double_t outerCB = 660.4; //360.4;
+const Double_t outerCB_yz = 660.4;
+const Double_t outerCB_xz = 660.4;
+const Double_t shortCB = 51.;
+const Double_t longCB = 254.;
+// const Double_t dphiCB = 2*TMath::ASin((shortCB/2)/longCB)*kRadToDeg;
+const Double_t dphiCB = 360./31.; // deg
+const Double_t thetaMinCB = 21.; // deg
+const Double_t thetaMaxCB = 159.; // deg
+const Double_t innerMWPC = 74.;
+const Double_t outerMWPC = 94.5;
+const Double_t MWPClength = 650.;
+const Double_t targetLength = 100.;
+const Double_t targetDiameter = 21.5;
+Double_t alphanew[3], xnew[3], ynew[3];
+Double_t pfit[2];
 
-  TPolyLine *contourPID[25], *contourCB[32], *contourCB_yz[13], *contourCB2_yz[13];
-  TPolyLine *contourCB_xz[13], *contourCB2_xz[13];
+TPolyLine *contourPID[25], *contourCB[32], *contourCB_yz[13], *contourCB2_yz[13];
+TPolyLine *contourCB_xz[13], *contourCB2_xz[13];
 
 ClassImp(TA2CentralApparatus)
 //_________________________________________________________________________________________
-//  TA2CentralApparatus
+// TA2CentralApparatus
 //
-//  The TA2CentralApparatus class describes the PID, cylindrical MWPC and Crystall Ball as a single apparatus and 
-//  provides methods for geometrical assotiation of their signals combining them into the particles tracks.
+// The TA2CentralApparatus class describes the PID, cylindrical MWPC and Crystall Ball as a single apparatus and
+// provides methods for geometrical assotiation of their signals combining them into the particles tracks.
 //
 
 //_______________________________________________________________________________
-TA2CentralApparatus::TA2CentralApparatus( const char* name, TA2System* analysis  ) : TA2Apparatus( name, analysis, kValidDetectors )
+  TA2CentralApparatus::TA2CentralApparatus( const char* name, TA2System* analysis ) : TA2Apparatus( name, analysis, kValidDetectors )
 {
   // Zero pointers and counters, add local SetConfig command list
   // to list of other apparatus commands
@@ -86,17 +88,17 @@ TA2CentralApparatus::TA2CentralApparatus( const char* name, TA2System* analysis 
   // Parameters/Options
   fUseTracksBestMwpc = kFALSE;
   // Angle limits
-  fMaxPhiMwpcNaI  = 1000.;
+  fMaxPhiMwpcNaI = 1000.;
   fMaxPhiTrackPid = 1000.;
-  fMaxPhiPidNaI   = 1000.;
+  fMaxPhiPidNaI = 1000.;
   fMaxPhiMwpcInterNaI = 1000.;
   fMaxPhiMwpcInterPid = 1000.;
   // Track limits
   fMaxTrack = 10;
-  fLimitsPsVertex[0] =  1000.;
-  fLimitsPsVertex[1] =  1000.;
+  fLimitsPsVertex[0] = 1000.;
+  fLimitsPsVertex[1] = 1000.;
   fLimitsPsVertex[2] = -1000.;
-  // NaI 
+  // NaI
   fFactorTrackLengthNaI = 1.; // TEST option being tested
   // Pid droop
   fLengthPid = 30.;
@@ -108,7 +110,7 @@ TA2CentralApparatus::TA2CentralApparatus( const char* name, TA2System* analysis 
   // PID
   fPid = NULL;
   fNhitsPid = 0;
-  fHitsPid  = NULL;
+  fHitsPid = NULL;
   fPositionsPid = NULL;
   fIhitsPidUsed = NULL;
   fIhitsPidNotUsed = NULL;
@@ -126,16 +128,16 @@ TA2CentralApparatus::TA2CentralApparatus( const char* name, TA2System* analysis 
   // NaI
   fNaI = NULL;
   fNclNaI = 0;
-  fClNaI  = NULL;
+  fClNaI = NULL;
   fIdClNaI = NULL;
   fUsedClNaI = NULL;
   fPositionsNaI = NULL;
   
   // Tracks
   fNtracks = 0;
-  fTracks  = NULL;
+  fTracks = NULL;
   fNchTracks = 0;
-  fIchTracks  = NULL;
+  fIchTracks = NULL;
   fNneTracks = 0;
   fIneTracks = NULL;
   // Single MWPC tracks
@@ -150,7 +152,7 @@ TA2CentralApparatus::TA2CentralApparatus( const char* name, TA2System* analysis 
   fPhiTrackPid = NULL;
   fPhiMwpcTrackPid = NULL;
   fPhiInterSingleMwpcNaI = NULL;
-  fPhiTrackSingleMwpcPid = NULL;  
+  fPhiTrackSingleMwpcPid = NULL;
   fPhiMwpcInterNaI = NULL;
   fPhiMwpcInterPid = NULL;
   fPhiPidNaI = NULL;
@@ -171,11 +173,11 @@ TA2CentralApparatus::TA2CentralApparatus( const char* name, TA2System* analysis 
   fVertR = NULL;
   
   // ParticleInfo
-  fDet     = NULL;
-  fSize    = NULL;
+  fDet = NULL;
+  fSize = NULL;
   fCentral = NULL;
-  fTime    = NULL;
-  fType    = NULL;
+  fTime = NULL;
+  fType = NULL;
   
   //
   AddCmdList(kCBKeys); // for SetConfig()
@@ -229,7 +231,7 @@ void TA2CentralApparatus::DeleteArrays()
   delete [] fPhiTrackPid;
   delete [] fPhiMwpcTrackPid;
   delete [] fPhiInterSingleMwpcNaI;
-  delete [] fPhiTrackSingleMwpcPid;  
+  delete [] fPhiTrackSingleMwpcPid;
   delete [] fPhiMwpcInterNaI;
   delete [] fPhiMwpcInterPid;
   delete [] fPhiPidNaI;
@@ -261,7 +263,7 @@ void TA2CentralApparatus::DeleteArrays()
 }
 
 //_______________________________________________________________________________
-TA2DataManager*  TA2CentralApparatus::CreateChild(const char* name, Int_t dclass)
+TA2DataManager* TA2CentralApparatus::CreateChild(const char* name, Int_t dclass)
 {
   // Create a TA2Detector class for use with the TA2CentralApparatus
   // Valid detector types are...
@@ -271,17 +273,17 @@ TA2DataManager*  TA2CentralApparatus::CreateChild(const char* name, Int_t dclass
   
   if ( !name ) name = Map2String( dclass );
   switch (dclass) {
-    default:
-      return NULL;
-    case ECB_PlasticPID:
-      fPid = new TA2PlasticPID( name, this );
-      return fPid;
-    case ECB_CalArray:
-      fNaI = new TA2CalArray( name, this );
-      return fNaI;
-    case ECB_TA2CylMwpc:
-      fMwpc =  new TA2CylMwpc( name, this );
-      return fMwpc;
+  default:
+    return NULL;
+  case ECB_PlasticPID:
+    fPid = new TA2PlasticPID( name, this );
+    return fPid;
+  case ECB_CalArray:
+    fNaI = new TA2CalArray( name, this );
+    return fNaI;
+  case ECB_TA2CylMwpc:
+    fMwpc = new TA2CylMwpc( name, this );
+    return fMwpc;
   }
 }
 
@@ -292,46 +294,46 @@ void TA2CentralApparatus::LoadVariable( )
   // cut or histogram setup.
   // LoadVariable( "name", pointer-to-variable, type-spec );
   // NB scaler variable pointers need the preceeding &
-  //    array variable pointers do not.
+  // array variable pointers do not.
   // type-spec ED prefix for a Double_t variable
-  //           EI prefix for an Int_t variable
+  // EI prefix for an Int_t variable
   // type-spec SingleX for a single-valued variable
-  //           MultiX  for a multi-valued variable
+  // MultiX for a multi-valued variable
   
   TA2DataManager::LoadVariable("Ntracks",	&fNtracks,	EISingleX);
   TA2DataManager::LoadVariable("NchTracks",	&fNchTracks,	EISingleX);
   TA2DataManager::LoadVariable("NneTracks",	&fNneTracks,	EISingleX);
   
   TA2DataManager::LoadVariable("PhiMwpcTrackNaI",	fPhiMwpcTrackNaI,	EDMultiX);
-  TA2DataManager::LoadVariable("PhiTrackPid",		fPhiTrackPid,		EDMultiX);
+  TA2DataManager::LoadVariable("PhiTrackPid",	fPhiTrackPid,	EDMultiX);
   TA2DataManager::LoadVariable("PhiMwpcTrackPid",	fPhiMwpcTrackPid,	EDMultiX);
   TA2DataManager::LoadVariable("PhiInterSingleMwpcNaI",	fPhiInterSingleMwpcNaI,	EDMultiX);
-  TA2DataManager::LoadVariable("PhiTrackSingleMwpcPid",	fPhiTrackSingleMwpcPid,	EDMultiX);  
+  TA2DataManager::LoadVariable("PhiTrackSingleMwpcPid",	fPhiTrackSingleMwpcPid,	EDMultiX);
   TA2DataManager::LoadVariable("PhiMwpcInterNaI",	fPhiMwpcInterNaI,	EDMultiX);
   TA2DataManager::LoadVariable("PhiMwpcInterPid",	fPhiMwpcInterPid,	EDMultiX);
-  TA2DataManager::LoadVariable("PhiPidNaI",		fPhiPidNaI,		EDMultiX);
+  TA2DataManager::LoadVariable("PhiPidNaI",	fPhiPidNaI,	EDMultiX);
   
-  TA2DataManager::LoadVariable("TrackTypes",	 fTrackType,	EDMultiX);
-  TA2DataManager::LoadVariable("TrackTheta",	 fTrackTheta,	EDMultiX);
-  TA2DataManager::LoadVariable("TrackPhi",	 fTrackPhi,	EDMultiX);
-  TA2DataManager::LoadVariable("EclNaI",	 fEclNaI,	EDMultiX);
-  TA2DataManager::LoadVariable("EhitPid",	 fEhitPid,	EDMultiX);
-  TA2DataManager::LoadVariable("EtrackMwpc",	 fEtrackMwpc,	EDMultiX);
-  TA2DataManager::LoadVariable("PsVertexX",	 fPsVertex[0],	EDMultiX);
-  TA2DataManager::LoadVariable("PsVertexY",	 fPsVertex[1],	EDMultiX);
-  TA2DataManager::LoadVariable("PsVertexZ",	 fPsVertex[2],	EDMultiX);
-  TA2DataManager::LoadVariable("PsVertexR",	 fPsVertexR,	EDMultiX);
+  TA2DataManager::LoadVariable("TrackTypes",	fTrackType,	EDMultiX);
+  TA2DataManager::LoadVariable("TrackTheta",	fTrackTheta,	EDMultiX);
+  TA2DataManager::LoadVariable("TrackPhi",	fTrackPhi,	EDMultiX);
+  TA2DataManager::LoadVariable("EclNaI",	fEclNaI,	EDMultiX);
+  TA2DataManager::LoadVariable("EhitPid",	fEhitPid,	EDMultiX);
+  TA2DataManager::LoadVariable("EtrackMwpc",	fEtrackMwpc,	EDMultiX);
+  TA2DataManager::LoadVariable("PsVertexX",	fPsVertex[0],	EDMultiX);
+  TA2DataManager::LoadVariable("PsVertexY",	fPsVertex[1],	EDMultiX);
+  TA2DataManager::LoadVariable("PsVertexZ",	fPsVertex[2],	EDMultiX);
+  TA2DataManager::LoadVariable("PsVertexR",	fPsVertexR,	EDMultiX);
   
   // Vertexes
   TA2DataManager::LoadVariable("VertexN",	&fNvertexes,	EISingleX);
-  TA2DataManager::LoadVariable("VertexX",	 fVert[0],	EDMultiX);
-  TA2DataManager::LoadVariable("VertexY",	 fVert[1],	EDMultiX);
-  TA2DataManager::LoadVariable("VertexZ",	 fVert[2],	EDMultiX);
-  TA2DataManager::LoadVariable("VertexR",	 fVertR,	EDMultiX);
-  TA2DataManager::LoadVariable("TrackDist",	 fTrackDist,	EDMultiX);
+  TA2DataManager::LoadVariable("VertexX",	fVert[0],	EDMultiX);
+  TA2DataManager::LoadVariable("VertexY",	fVert[1],	EDMultiX);
+  TA2DataManager::LoadVariable("VertexZ",	fVert[2],	EDMultiX);
+  TA2DataManager::LoadVariable("VertexR",	fVertR,	EDMultiX);
+  TA2DataManager::LoadVariable("TrackDist",	fTrackDist,	EDMultiX);
   
   // ParticleInfo
-  TA2DataManager::LoadVariable("Type",	 fType,	EIMultiX);
+  TA2DataManager::LoadVariable("Type",	fType,	EIMultiX);
   
   TA2Apparatus::LoadVariable();
 }
@@ -344,54 +346,54 @@ void TA2CentralApparatus::SetConfig(Char_t* line, Int_t key)
   Double_t dparm[20];
   
   switch (key){
-    case ECBUseTracksBestMwpc:
-      // Use best MWPC tracks
-      fUseTracksBestMwpc = kTRUE;
-      cout << "TA2CentralApparatus: Best MWPC tracks are used" << endl;
-      break;
-    case ECBDroop:
-      // Droop correction for light attenuation inside PID strips
-      if( sscanf( line, "%lf%d%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf",
-	          &fLengthPid, &fNpointsDroopPid,
-	          dparm,    dparm+1,  dparm+2,  dparm+3,  dparm+4,  dparm+5,  dparm+6,  dparm+7,  dparm+8,  dparm+9,
-		  dparm+10, dparm+11, dparm+12, dparm+13, dparm+14, dparm+15, dparm+16, dparm+17, dparm+18, dparm+19 ) < 2*fNpointsDroopPid + 2 )
+  case ECBUseTracksBestMwpc:
+    // Use best MWPC tracks
+    fUseTracksBestMwpc = kTRUE;
+    cout << "TA2CentralApparatus: Best MWPC tracks are used" << endl;
+    break;
+  case ECBDroop:
+    // Droop correction for light attenuation inside PID strips
+    if( sscanf( line, "%lf%d%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf",
+		&fLengthPid, &fNpointsDroopPid,
+		dparm, dparm+1, dparm+2, dparm+3, dparm+4, dparm+5, dparm+6, dparm+7, dparm+8, dparm+9,
+		dparm+10, dparm+11, dparm+12, dparm+13, dparm+14, dparm+15, dparm+16, dparm+17, dparm+18, dparm+19 ) < 2*fNpointsDroopPid + 2 )
       {
 	PrintError(line,"<Droop correction for light attenuation inside PID strips>");
 	return;
       }
-      fLostCorrPosPid = new Double_t[fNpointsDroopPid];
-      fLostCorrFacPid = new Double_t[fNpointsDroopPid];
-      for(Int_t i=0; i<fNpointsDroopPid; ++i)
+    fLostCorrPosPid = new Double_t[fNpointsDroopPid];
+    fLostCorrFacPid = new Double_t[fNpointsDroopPid];
+    for(Int_t i=0; i<fNpointsDroopPid; ++i)
       {
 	fLostCorrPosPid[i] = dparm[i];
 	fLostCorrFacPid[i] = dparm[fNpointsDroopPid+i];
       }
-      break;
-    case ECBAngleLimits:
-      // Angle difference limits
-      if ( sscanf(line,"%lf%lf%lf%lf%lf",&fMaxPhiMwpcNaI,&fMaxPhiTrackPid,&fMaxPhiPidNaI,&fMaxPhiMwpcInterNaI,&fMaxPhiMwpcInterPid) != 5 )
+    break;
+  case ECBAngleLimits:
+    // Angle difference limits
+    if ( sscanf(line,"%lf%lf%lf%lf%lf",&fMaxPhiMwpcNaI,&fMaxPhiTrackPid,&fMaxPhiPidNaI,&fMaxPhiMwpcInterNaI,&fMaxPhiMwpcInterPid) != 5 )
       {
 	PrintError(line,"<CB angle difference limits>");
 	return;
       }
-      fMaxPhiMwpcNaI  *= kDegToRad;
-      fMaxPhiTrackPid *= kDegToRad;
-      fMaxPhiPidNaI   *= kDegToRad;
-      fMaxPhiMwpcInterNaI *= kDegToRad;
-      fMaxPhiMwpcInterPid *= kDegToRad;
-      break;
-    case ECBTrackLimits:
-      // Track limits
-      if( sscanf(line,"%d%lf%lf%lf",&fMaxTrack,&fLimitsPsVertex[0],&fLimitsPsVertex[1],&fLimitsPsVertex[2]) != 4 )
+    fMaxPhiMwpcNaI *= kDegToRad;
+    fMaxPhiTrackPid *= kDegToRad;
+    fMaxPhiPidNaI *= kDegToRad;
+    fMaxPhiMwpcInterNaI *= kDegToRad;
+    fMaxPhiMwpcInterPid *= kDegToRad;
+    break;
+  case ECBTrackLimits:
+    // Track limits
+    if( sscanf(line,"%d%lf%lf%lf",&fMaxTrack,&fLimitsPsVertex[0],&fLimitsPsVertex[1],&fLimitsPsVertex[2]) != 4 )
       {
 	PrintError(line,"<Track limits>");
 	return;
       }
-      break;
-    default:
-      // default main apparatus SetConfig()
-      TA2Apparatus::SetConfig( line, key );
-      break;
+    break;
+  default:
+    // default main apparatus SetConfig()
+    TA2Apparatus::SetConfig( line, key );
+    break;
   }
 }
 
@@ -405,59 +407,59 @@ void TA2CentralApparatus::PostInit()
   
   // Pointer to PID hits, elements, paddle positions
   if (fPid)
-  {
-    fHitsPid = fPid->GetHits();
-    fPositionsPid = new TVector2[fPid->GetNelement()];
-    fIhitsPidUsed = new Int_t[fPid->GetNelement()];
-    fIhitsPidNotUsed = new Bool_t[fPid->GetNelement()];
-  }
+    {
+      fHitsPid = fPid->GetHits();
+      fPositionsPid = new TVector2[fPid->GetNelement()];
+      fIhitsPidUsed = new Int_t[fPid->GetNelement()];
+      fIhitsPidNotUsed = new Bool_t[fPid->GetNelement()];
+    }
   
   // Init the pointers to MWPC tracks
   if (fMwpc)
-  {
-    fNchambers = fMwpc->GetNchamber();
-    //
-    fRmwpc = fMwpc->GetR();
-    fTracksMwpc = fMwpc->GetTracks();
-    if (fUseTracksBestMwpc)
     {
-      fTracksTrueMwpc          = fMwpc->GetTracksTrueBest();
-      fTracksTrueCandidateMwpc = fMwpc->GetTracksTrueCandidateBest();
-      fTracksCandidateMwpc     = fMwpc->GetTracksCandidateBest();
+      fNchambers = fMwpc->GetNchamber();
+      //
+      fRmwpc = fMwpc->GetR();
+      fTracksMwpc = fMwpc->GetTracks();
+      if (fUseTracksBestMwpc)
+	{
+	  fTracksTrueMwpc = fMwpc->GetTracksTrueBest();
+	  fTracksTrueCandidateMwpc = fMwpc->GetTracksTrueCandidateBest();
+	  fTracksCandidateMwpc = fMwpc->GetTracksCandidateBest();
+	}
+      else
+	{
+	  fTracksTrueMwpc = fMwpc->GetTracksTrue();
+	  fTracksTrueCandidateMwpc = fMwpc->GetTracksTrueCandidate();
+	  fTracksCandidateMwpc = fMwpc->GetTracksCandidate();
+	}
+      fNintersTrueMwpc = fMwpc->GetNintersTrue();
+      fIintersTrueMwpc = new const Int_t*[fNchambers];
+      fNintersCandidateMwpc = fMwpc->GetNintersCandidate();
+      fIintersCandidateMwpc = new const Int_t*[fNchambers];
+      fNintersTrueMwpcNotUsed = new Int_t[fNchambers];
+      fNintersCandidateMwpcNotUsed = new Int_t[fNchambers];
+      for (Int_t i=0; i<fNchambers; ++i)
+	{
+	  fIintersTrueMwpc[i] = fMwpc->GetIintersTrue(i);
+	  fIintersCandidateMwpc[i] = fMwpc->GetIintersCandidate(i);
+	  fNintersTrueMwpcNotUsed[i] = 0;
+	  fNintersCandidateMwpcNotUsed[i] = 0;
+	}
     }
-    else
-    {
-      fTracksTrueMwpc          = fMwpc->GetTracksTrue();
-      fTracksTrueCandidateMwpc = fMwpc->GetTracksTrueCandidate();
-      fTracksCandidateMwpc     = fMwpc->GetTracksCandidate();
-    }
-    fNintersTrueMwpc = fMwpc->GetNintersTrue();
-    fIintersTrueMwpc = new const Int_t*[fNchambers];
-    fNintersCandidateMwpc = fMwpc->GetNintersCandidate();
-    fIintersCandidateMwpc = new const Int_t*[fNchambers];
-    fNintersTrueMwpcNotUsed = new Int_t[fNchambers];
-    fNintersCandidateMwpcNotUsed = new Int_t[fNchambers];
-    for (Int_t i=0; i<fNchambers; ++i)
-    {
-      fIintersTrueMwpc[i] = fMwpc->GetIintersTrue(i);
-      fIintersCandidateMwpc[i] = fMwpc->GetIintersCandidate(i);
-      fNintersTrueMwpcNotUsed[i] = 0;
-      fNintersCandidateMwpcNotUsed[i] = 0;
-    }
-  }
   
   // Pointer to NaI clasters
   if (fNaI)
-  {
-    if (((TA2CalArray*)fNaI)->IsUCLAClustering())
-      fClNaI = ((TA2CalArray*)fNaI)->GetClusterUCLA(); // UCLA claster analysis
-    else
-      fClNaI = fNaI->GetCluster(); // Standard claster analysis
-    fIdClNaI = fNaI->GetClustHit();
-    fPositionsNaI = new TVector3[fNaI->GetMaxCluster()];
-    fUsedClNaI = new Bool_t[fNaI->GetMaxCluster()];
-    for (UInt_t i=0; i<fNaI->GetMaxCluster(); ++i) fUsedClNaI[i] = kFALSE;
-  }
+    {
+      if (((TA2CalArray*)fNaI)->IsUCLAClustering())
+	fClNaI = ((TA2CalArray*)fNaI)->GetClusterUCLA(); // UCLA claster analysis
+      else
+	fClNaI = fNaI->GetCluster(); // Standard claster analysis
+      fIdClNaI = fNaI->GetClustHit();
+      fPositionsNaI = new TVector3[fNaI->GetMaxCluster()];
+      fUsedClNaI = new Bool_t[fNaI->GetMaxCluster()];
+      for (UInt_t i=0; i<fNaI->GetMaxCluster(); ++i) fUsedClNaI[i] = kFALSE;
+    }
   
   // Tracks
   fTracks = new TA2CentralTrack[fMaxTrack];
@@ -465,19 +467,19 @@ void TA2CentralApparatus::PostInit()
   fIneTracks = new Int_t[fMaxTrack];
   fTracksSingleMwpc = new TA2CentralTrack[fMaxTrack];
   // For histograms
-  fPhiMwpcTrackNaI = new Double_t[fMaxTrack+1];		fPhiMwpcTrackNaI[fMaxTrack] = EBufferEnd;
-  fPhiTrackPid     = new Double_t[fMaxTrack+1];		fPhiTrackPid[fMaxTrack]     = EBufferEnd;
-  fPhiMwpcTrackPid = new Double_t[fMaxTrack+1];		fPhiMwpcTrackPid[fMaxTrack] = EBufferEnd;
+  fPhiMwpcTrackNaI = new Double_t[fMaxTrack+1];	fPhiMwpcTrackNaI[fMaxTrack] = EBufferEnd;
+  fPhiTrackPid = new Double_t[fMaxTrack+1];	fPhiTrackPid[fMaxTrack] = EBufferEnd;
+  fPhiMwpcTrackPid = new Double_t[fMaxTrack+1];	fPhiMwpcTrackPid[fMaxTrack] = EBufferEnd;
   fPhiInterSingleMwpcNaI = new Double_t[fMaxTrack+1];	fPhiInterSingleMwpcNaI[fMaxTrack] = EBufferEnd;
   fPhiTrackSingleMwpcPid = new Double_t[fMaxTrack+1];	fPhiTrackSingleMwpcPid[fMaxTrack] = EBufferEnd;
-  fPhiMwpcInterNaI = new Double_t[fMaxTrack+1];		fPhiMwpcInterNaI[fMaxTrack] = EBufferEnd;
-  fPhiMwpcInterPid = new Double_t[fMaxTrack+1];		fPhiMwpcInterPid[fMaxTrack] = EBufferEnd;
-  fPhiPidNaI = new Double_t[fMaxTrack+1];		fPhiPidNaI[fMaxTrack] = EBufferEnd;
+  fPhiMwpcInterNaI = new Double_t[fMaxTrack+1];	fPhiMwpcInterNaI[fMaxTrack] = EBufferEnd;
+  fPhiMwpcInterPid = new Double_t[fMaxTrack+1];	fPhiMwpcInterPid[fMaxTrack] = EBufferEnd;
+  fPhiPidNaI = new Double_t[fMaxTrack+1];	fPhiPidNaI[fMaxTrack] = EBufferEnd;
   fTrackType = new Double_t[fMaxTrack+1];
   fTrackTheta = new Double_t[fMaxTrack+1];
-  fTrackPhi   = new Double_t[fMaxTrack+1];
-  fEclNaI     = new Double_t[fMaxTrack+1];
-  fEhitPid    = new Double_t[fMaxTrack+1];
+  fTrackPhi = new Double_t[fMaxTrack+1];
+  fEclNaI = new Double_t[fMaxTrack+1];
+  fEhitPid = new Double_t[fMaxTrack+1];
   fEtrackMwpc = new Double_t[fMaxTrack+1];
   for (Int_t i=0;i<3;++i) fPsVertex[i] = new Double_t[fMaxTrack+1];
   fPsVertexR = new Double_t[fMaxTrack+1];
@@ -487,10 +489,10 @@ void TA2CentralApparatus::PostInit()
   fVertexes = new TVector3[fMaxVertex];
   fIvertexes = new Int_t*[fMaxTrack];
   for (Int_t i=0; i<fMaxTrack; ++i)
-  {
-    fIvertexes[i] = new Int_t[fMaxTrack];
-    fIvertexes[i][i] = -1;
-  }
+    {
+      fIvertexes[i] = new Int_t[fMaxTrack];
+      fIvertexes[i][i] = -1;
+    }
   // for histograming
   for (Int_t i=0;i<3;++i) fVert[i] = new Double_t[fMaxVertex+1];
   fVertR = new Double_t[fMaxVertex+1];
@@ -545,7 +547,7 @@ void TA2CentralApparatus::Cleanup()
   }
   
   // Tracks
-  fNtracks   = 0;
+  fNtracks = 0;
   fNchTracks = 0;
   fNneTracks = 0;
   // Tracks with 2 MWPC
@@ -559,18 +561,18 @@ void TA2CentralApparatus::Cleanup()
   fNtracksSingleMwpcBest = 0;
   // For histograms
   for (Int_t i=0; i<fMaxTrack; ++i)
-  {
-    fPhiMwpcTrackNaI[i] = kNullFloat;
-    fPhiTrackPid[i]     = kNullFloat;
-    fPhiMwpcTrackPid[i] = kNullFloat;
-    fPhiInterSingleMwpcNaI[i] = kNullFloat;
-    fPhiTrackSingleMwpcPid[i] = kNullFloat;
-    fPhiMwpcInterNaI[i] = kNullFloat;
-    fPhiMwpcInterPid[i] = kNullFloat;
-    fPhiPidNaI[i] = kNullFloat;
-    for (Int_t j=0; j<3; ++j) fPsVertex[j][i] = kNullFloat;
-    fPsVertexR[i] = kNullFloat;
-  }
+    {
+      fPhiMwpcTrackNaI[i] = kNullFloat;
+      fPhiTrackPid[i] = kNullFloat;
+      fPhiMwpcTrackPid[i] = kNullFloat;
+      fPhiInterSingleMwpcNaI[i] = kNullFloat;
+      fPhiTrackSingleMwpcPid[i] = kNullFloat;
+      fPhiMwpcInterNaI[i] = kNullFloat;
+      fPhiMwpcInterPid[i] = kNullFloat;
+      fPhiPidNaI[i] = kNullFloat;
+      for (Int_t j=0; j<3; ++j) fPsVertex[j][i] = kNullFloat;
+      fPsVertexR[i] = kNullFloat;
+    }
   
   // Vertexes
   fNvertexes = 0;
@@ -583,29 +585,29 @@ void TA2CentralApparatus::Reconstruct()
   
   // # of hits in PID
   if (fPid)
-  {
-    Double_t rPid, phiPid;
-    TVector3 **pos = fPid->GetPosition();
-    fNhitsPid = fPid->GetNhits();
-    for (Int_t i=0; i<fNhitsPid; ++i)
     {
-      rPid   = pos[fHitsPid[i]]->X();		// Pid radius in mm
-      phiPid = pos[fHitsPid[i]]->Z()*kDegToRad;	// Pid phi in radians
-      fPositionsPid[i] = TVector2(rPid*TMath::Cos(phiPid),rPid*TMath::Sin(phiPid));
+      Double_t rPid, phiPid;
+      TVector3 **pos = fPid->GetPosition();
+      fNhitsPid = fPid->GetNhits();
+      for (Int_t i=0; i<fNhitsPid; ++i)
+	{
+	  rPid = pos[fHitsPid[i]]->X();	// Pid radius in mm
+	  phiPid = pos[fHitsPid[i]]->Z()*kDegToRad;	// Pid phi in radians
+	  fPositionsPid[i] = TVector2(rPid*TMath::Cos(phiPid),rPid*TMath::Sin(phiPid));
+	}
     }
-  }
   else
     fNhitsPid = 0;
   
   // # of clastrers in NaI
   if (fNaI)
-  {
-    fNclNaI = fNaI->GetNCluster();
-    for (Int_t i=0; i<fNclNaI; ++i)
     {
-      fPositionsNaI[i] = *(fClNaI[fIdClNaI[i]]->GetMeanPosition())*fFactorTrackLengthNaI*10.;// TODO: init fFactorPenetroNaI in cfg
+      fNclNaI = fNaI->GetNCluster();
+      for (Int_t i=0; i<fNclNaI; ++i)
+	{
+	  fPositionsNaI[i] = *(fClNaI[fIdClNaI[i]]->GetMeanPosition())*fFactorTrackLengthNaI*10.;// TODO: init fFactorPenetroNaI in cfg
+	}
     }
-  }
   else
     fNclNaI = 0;
   
@@ -620,7 +622,7 @@ void TA2CentralApparatus::Reconstruct()
   MarkEndBuffers();
 
   // Test
-//   Test();
+  // Test();
 }
 
 //_______________________________________________________________________________
@@ -629,50 +631,50 @@ void TA2CentralApparatus::MakeTracks()
   // Make tracks of particles comming from the target
   
   if (fMwpc)
-  {
-    // Tracks with 2 MWPC
-    if (fMwpc->GetNtracks() > 0)
     {
-      // PID & MWPC(true) & NaI
-      MakeTracksTrue(fTracksTrueMwpc,fMapMwpcTrueTrackNaI);
-      // PID & MWPC(true-candidate) & NaI
-      MakeTracksTrue(fTracksTrueCandidateMwpc,fMapMwpcTrueCandidateTrackNaI);
-      // PID & MWPC(true)
-      MakeTracksPidMwpc(fTracksTrueMwpc);
-      // PID & MWPC(true-candidate)
-      MakeTracksPidMwpc(fTracksTrueCandidateMwpc);
-      // PID & MWPC(candidate) & NaI
-      MakeTracksTrue(fTracksCandidateMwpc,fMapMwpcCandidateTrackNaI);
-      // PID & MWPC(candidate)
-      MakeTracksPidMwpc(fTracksCandidateMwpc);
-      // MWPC(true)
-      MakeTracksMwpc(fTracksTrueMwpc);
-      // MWPC(true-candidate)
-      MakeTracksMwpc(fTracksTrueCandidateMwpc);
+      // Tracks with 2 MWPC
+      if (fMwpc->GetNtracks() > 0)
+	{
+	  // PID & MWPC(true) & NaI
+	  MakeTracksTrue(fTracksTrueMwpc,fMapMwpcTrueTrackNaI);
+	  // PID & MWPC(true-candidate) & NaI
+	  MakeTracksTrue(fTracksTrueCandidateMwpc,fMapMwpcTrueCandidateTrackNaI);
+	  // PID & MWPC(true)
+	  MakeTracksPidMwpc(fTracksTrueMwpc);
+	  // PID & MWPC(true-candidate)
+	  MakeTracksPidMwpc(fTracksTrueCandidateMwpc);
+	  // PID & MWPC(candidate) & NaI
+	  MakeTracksTrue(fTracksCandidateMwpc,fMapMwpcCandidateTrackNaI);
+	  // PID & MWPC(candidate)
+	  MakeTracksPidMwpc(fTracksCandidateMwpc);
+	  // MWPC(true)
+	  MakeTracksMwpc(fTracksTrueMwpc);
+	  // MWPC(true-candidate)
+	  MakeTracksMwpc(fTracksTrueCandidateMwpc);
+	}
+    
+      // Tracks with 1 MWPC
+      // PID & MWPC(true intersections) & NaI
+      MakeTracksTrue(fIintersTrueMwpc,fNintersTrueMwpc,fMapMwpcTrueInterNaI);
+      // PID & MWPC(true intersections)
+      MakeTracksPidMwpc(fIintersTrueMwpc,fNintersTrueMwpc);
+      // PID & MWPC(condidate intersections) & NaI
+      MakeTracksTrue(fIintersCandidateMwpc,fNintersCandidateMwpc,fMapMwpcCandidateInterNaI);
+      // PID & MWPC(condidate intersections)
+      MakeTracksPidMwpc(fIintersCandidateMwpc,fNintersCandidateMwpc);
+    
+      // Tracks with 2 MWPC
+      // MWPC(candidate tracks)
+      if (fMwpc->GetNtracksCandidate() > 0)
+	{
+	  MakeTracksMwpc(fTracksCandidateMwpc);
+	}
+    
+      // Not used MWPC true intersections
+      CountNotUsedIntersMwpc(fIintersTrueMwpc,fNintersTrueMwpc,fNintersTrueMwpcNotUsed);
+      // Not used MWPC candidate intersections
+      CountNotUsedIntersMwpc(fIintersCandidateMwpc,fNintersCandidateMwpc,fNintersCandidateMwpcNotUsed);
     }
-    
-    // Tracks with 1 MWPC
-    // PID & MWPC(true intersections) & NaI
-    MakeTracksTrue(fIintersTrueMwpc,fNintersTrueMwpc,fMapMwpcTrueInterNaI);
-    // PID & MWPC(true intersections)
-    MakeTracksPidMwpc(fIintersTrueMwpc,fNintersTrueMwpc);
-    // PID & MWPC(condidate intersections) & NaI
-    MakeTracksTrue(fIintersCandidateMwpc,fNintersCandidateMwpc,fMapMwpcCandidateInterNaI);
-    // PID & MWPC(condidate intersections)
-    MakeTracksPidMwpc(fIintersCandidateMwpc,fNintersCandidateMwpc);
-    
-    // Tracks with 2 MWPC
-    // MWPC(candidate tracks)
-    if (fMwpc->GetNtracksCandidate() > 0)
-    {
-      MakeTracksMwpc(fTracksCandidateMwpc);
-    }
-    
-    // Not used MWPC true intersections
-    CountNotUsedIntersMwpc(fIintersTrueMwpc,fNintersTrueMwpc,fNintersTrueMwpcNotUsed);
-    // Not used MWPC candidate intersections
-    CountNotUsedIntersMwpc(fIintersCandidateMwpc,fNintersCandidateMwpc,fNintersCandidateMwpcNotUsed);
-  }
   
   // Tracks without MWPC
   // PID & NaI
@@ -691,80 +693,87 @@ void TA2CentralApparatus::MakeTracksTrue(const map<Double_t,Int_t> *tracksMwpc, 
   Double_t phi;
   Int_t iTrMwpc;
   for (map<Double_t,Int_t>::const_iterator iterTracksMwpc=tracksMwpc->begin(); iterTracksMwpc!=tracksMwpc->end(); ++iterTracksMwpc)
-  {
-    iTrMwpc = iterTracksMwpc->second;
-    if (fMwpc->IsUsedWIE(iTrMwpc)) continue; // check if the strips or wires were already used
-    //
-    for (Int_t iClNaI=0; iClNaI<fNclNaI; ++iClNaI)
     {
-      if (IsUsedClNaI(iClNaI)) continue; // check if the clNaI was used already
+      iTrMwpc = iterTracksMwpc->second;
+      if (fMwpc->IsUsedWIE(iTrMwpc)) continue; // check if the strips or wires were already used
+      //
+      for (Int_t iClNaI=0; iClNaI<fNclNaI; ++iClNaI)
+	{
+	  if (IsUsedClNaI(iClNaI)) continue; // check if the clNaI was used already
 
-      // Susanna - begin
-      Double_t x0 = fMwpc->GetInters(0,fTracksMwpc[iTrMwpc].GetIinter(0))->GetPosition()->X();
-      Double_t y0 = fMwpc->GetInters(0,fTracksMwpc[iTrMwpc].GetIinter(0))->GetPosition()->Y();
-      Double_t x1 = fMwpc->GetInters(1,fTracksMwpc[iTrMwpc].GetIinter(1))->GetPosition()->X();
-      Double_t y1 = fMwpc->GetInters(1,fTracksMwpc[iTrMwpc].GetIinter(1))->GetPosition()->Y();
-      Double_t xcb = fPositionsNaI[iClNaI].X();
-      Double_t ycb = fPositionsNaI[iClNaI].Y();
-      Double_t alpha[3] = {TMath::ATan2(x0,y0), TMath::ATan2(x1,y1), TMath::ATan2(xcb,ycb)};
-      Double_t radii[3] = {innerMWPC, outerMWPC, TMath::Sqrt(xcb*xcb + ycb*ycb)};
-      // pinit[0] = delta0 = 0; pinit[1] = phi0 = alpha[0];
-      // as if the track goes through (0., 0.)
-      Double_t pinit[2] = {0, alpha[0]};
-      Double_t pfit[2];
-      Int_t dim = 3;
-      Int_t fit = MinuitFit(dim, alpha, radii, pinit, pfit);
-      if (!fit)
-	cout << "****** UNSUCCESSFUL FIT :( ******" << endl;
-      else 
-	cout << "****** SUCCESSFUL FIT!!! Fit parameters are: " << pfit[0] << " and " << pfit[1] << endl;
-      // Susanna - end
+	  // Susanna - begin
+	  Double_t x0 = fMwpc->GetInters(0,fTracksMwpc[iTrMwpc].GetIinter(0))->GetPosition()->X();
+	  Double_t y0 = fMwpc->GetInters(0,fTracksMwpc[iTrMwpc].GetIinter(0))->GetPosition()->Y();
+	  Double_t x1 = fMwpc->GetInters(1,fTracksMwpc[iTrMwpc].GetIinter(1))->GetPosition()->X();
+	  Double_t y1 = fMwpc->GetInters(1,fTracksMwpc[iTrMwpc].GetIinter(1))->GetPosition()->Y();
+	  Double_t xcb = fPositionsNaI[iClNaI].X();
+	  Double_t ycb = fPositionsNaI[iClNaI].Y();
+	  Double_t alpha[3] = {TMath::ATan2(y0,x0), TMath::ATan2(y1,x1), TMath::ATan2(ycb,xcb)};
+	  Double_t radii[3] = {innerMWPC, outerMWPC, TMath::Sqrt(xcb*xcb + ycb*ycb)};
+	  // pinit[0] = delta0 = 0; pinit[1] = phi0 = alpha[0];
+	  // pfit[0] = delta; pfit[1] = phi;
+	  // as if the track goes through (0., 0.)
+	  Double_t pinit[2] = {0, alpha[0]};
 
-      phi = fTracksMwpc[iTrMwpc].Angle(fPositionsNaI[iClNaI]);
-      if (phi > fMaxPhiMwpcNaI) continue;
-      mapPhiMwpcNaI[phi] = make_pair(iTrMwpc,iClNaI);
+	  Int_t dim = 3;
+	  fFit = MinuitFit(dim, alpha, radii, pinit, pfit);
+	  if (!fFit)
+	    cout << "****** UNSUCCESSFUL FIT :( ******" << endl;
+	  else 
+	    cout << "****** SUCCESSFUL FIT!!! Fit parameters are: " << pfit[0] << " and " << pfit[1]*kRadToDeg << endl;
+	  for (int j=0; j<dim; j++) {
+	    alphanew[j] = pfit[1] + TMath::ASin(pfit[0]/radii[j]);
+	    xnew[j] = radii[j]*TMath::Cos(alphanew[j]);
+	    ynew[j] = radii[j]*TMath::Sin(alphanew[j]);
+	    cout << "Intersection " << j << " from new fit: (" << xnew[j] << ", " << ynew[j] << ")" << endl;
+	  }
+	  // Susanna - end
+
+	  phi = fTracksMwpc[iTrMwpc].Angle(fPositionsNaI[iClNaI]);
+	  if (phi > fMaxPhiMwpcNaI) continue;
+	  mapPhiMwpcNaI[phi] = make_pair(iTrMwpc,iClNaI);
+	}
     }
-  }
   
   // The best MWPC track & NaI & PID and MWPC track & NaI pairs
   Int_t iClNaI, iPid;
   const TVector3 *r[2];
   TA2TrackLine track;
   for (map<Double_t,pair<Int_t,Int_t> >::iterator iterPhi = mapPhiMwpcNaI.begin(); iterPhi != mapPhiMwpcNaI.end(); ++iterPhi)
-  {
-    if (TooManyTracks()) break;
-    //
-    iTrMwpc = iterPhi->second.first;
-    if (fMwpc->IsUsedWIE(iTrMwpc)) continue; // check if the strips or wires were already used
-    iClNaI = iterPhi->second.second;
-    if (IsUsedClNaI(iClNaI)) continue; // check if the clNaI was used already
-    //
-    r[0] = &(fTracksMwpc[iTrMwpc].GetOrigin());
-    r[1] =  fPositionsNaI + iClNaI;
-    if (track.BuildTrack(*r[0],*r[1],-1.,fLimitsPsVertex))
     {
-      // Test the track & PID combinations and find the best one
-      fPhiTrackPid[fNtracks] = fMaxPhiTrackPid;
-      iPid = kNullHit;
-      for (Int_t i=0; i<fNhitsPid; ++i)
-      {
-	phi = track.Angle(fPositionsPid[i]);
-	if (TMath::Abs(phi) > TMath::Abs(fPhiTrackPid[fNtracks])) continue;
-	fPhiTrackPid[fNtracks] = phi;
-	iPid = i;
-      }
-      fPhiTrackPid[fNtracks] *= (iPid == kNullHit) ? kNullFloat/fMaxPhiTrackPid : kRadToDeg;
-      fPhiMwpcTrackNaI[fNtracks] = iterPhi->first*kRadToDeg;
-      // Add a new track
-      AddTrack(iPid,
-	       fTracksMwpc[iTrMwpc].GetIinter(0),
-	       fTracksMwpc[iTrMwpc].GetIinter(1),
-	       iClNaI,
-	       track.GetOrigin(),
-	       track.GetDirCos(),
-	       track.GetPsVertex());
+      if (TooManyTracks()) break;
+      //
+      iTrMwpc = iterPhi->second.first;
+      if (fMwpc->IsUsedWIE(iTrMwpc)) continue; // check if the strips or wires were already used
+      iClNaI = iterPhi->second.second;
+      if (IsUsedClNaI(iClNaI)) continue; // check if the clNaI was used already
+      //
+      r[0] = &(fTracksMwpc[iTrMwpc].GetOrigin());
+      r[1] = fPositionsNaI + iClNaI;
+      if (track.BuildTrack(*r[0],*r[1],-1.,fLimitsPsVertex))
+	{
+	  // Test the track & PID combinations and find the best one
+	  fPhiTrackPid[fNtracks] = fMaxPhiTrackPid;
+	  iPid = kNullHit;
+	  for (Int_t i=0; i<fNhitsPid; ++i)
+	    {
+	      phi = track.Angle(fPositionsPid[i]);
+	      if (TMath::Abs(phi) > TMath::Abs(fPhiTrackPid[fNtracks])) continue;
+	      fPhiTrackPid[fNtracks] = phi;
+	      iPid = i;
+	    }
+	  fPhiTrackPid[fNtracks] *= (iPid == kNullHit) ? kNullFloat/fMaxPhiTrackPid : kRadToDeg;
+	  fPhiMwpcTrackNaI[fNtracks] = iterPhi->first*kRadToDeg;
+	  // Add a new track
+	  AddTrack(iPid,
+		   fTracksMwpc[iTrMwpc].GetIinter(0),
+		   fTracksMwpc[iTrMwpc].GetIinter(1),
+		   iClNaI,
+		   track.GetOrigin(),
+		   track.GetDirCos(),
+		   track.GetPsVertex());
+	}
     }
-  }
 }
 
 //_______________________________________________________________________________
@@ -775,40 +784,40 @@ void TA2CentralApparatus::MakeTracksPidMwpc(const map<Double_t,Int_t> *tracksMwp
   Int_t iTrMwpc, iPid;
   Double_t phi;
   for (map<Double_t,Int_t>::const_iterator iterTrackMwpc=tracksMwpc->begin(); iterTrackMwpc!=tracksMwpc->end(); ++iterTrackMwpc)
-  {
-    if (TooManyTracks()) break;
-    //
-    iTrMwpc = iterTrackMwpc->second;
-    // Check if the strips or wires were already used
-    if (fMwpc->IsUsedWIE(iTrMwpc)) continue;
-    // Test the MWPC track & PID combinations and find the best one
-    fPhiMwpcTrackPid[fNtracks] = fMaxPhiTrackPid;
-    iPid = kNullHit;
-    for (Int_t i=0; i<fNhitsPid; ++i)
     {
-      phi = fTracksMwpc[iTrMwpc].Angle(fPositionsPid[i]);
-      if (TMath::Abs(phi) > TMath::Abs(fPhiMwpcTrackPid[fNtracks])) continue;
-      fPhiMwpcTrackPid[fNtracks] = phi;
-      iPid = i;
+      if (TooManyTracks()) break;
+      //
+      iTrMwpc = iterTrackMwpc->second;
+      // Check if the strips or wires were already used
+      if (fMwpc->IsUsedWIE(iTrMwpc)) continue;
+      // Test the MWPC track & PID combinations and find the best one
+      fPhiMwpcTrackPid[fNtracks] = fMaxPhiTrackPid;
+      iPid = kNullHit;
+      for (Int_t i=0; i<fNhitsPid; ++i)
+	{
+	  phi = fTracksMwpc[iTrMwpc].Angle(fPositionsPid[i]);
+	  if (TMath::Abs(phi) > TMath::Abs(fPhiMwpcTrackPid[fNtracks])) continue;
+	  fPhiMwpcTrackPid[fNtracks] = phi;
+	  iPid = i;
+	}
+      if (iPid == kNullHit)
+	{
+	  fPhiMwpcTrackPid[fNtracks] = kNullFloat;
+	  continue;
+	}
+      else
+	{
+	  fPhiMwpcTrackPid[fNtracks] *= kRadToDeg;
+	  // Add a new track
+	  AddTrack(iPid,
+		   fTracksMwpc[iTrMwpc].GetIinter(0),
+		   fTracksMwpc[iTrMwpc].GetIinter(1),
+		   kNullHit,
+		   fTracksMwpc[iTrMwpc].GetOrigin(),
+		   fTracksMwpc[iTrMwpc].GetDirCos(),
+		   fTracksMwpc[iTrMwpc].GetPsVertex());
+	}
     }
-    if (iPid == kNullHit)
-    {
-      fPhiMwpcTrackPid[fNtracks] = kNullFloat;
-      continue;
-    }
-    else
-    {
-      fPhiMwpcTrackPid[fNtracks] *= kRadToDeg;
-      // Add a new track
-      AddTrack(iPid,
-	       fTracksMwpc[iTrMwpc].GetIinter(0),
-	       fTracksMwpc[iTrMwpc].GetIinter(1),
-	       kNullHit,
-	       fTracksMwpc[iTrMwpc].GetOrigin(),
-	       fTracksMwpc[iTrMwpc].GetDirCos(),
-	       fTracksMwpc[iTrMwpc].GetPsVertex());
-    }
-  }
 }
 
 //_______________________________________________________________________________
@@ -818,20 +827,20 @@ void TA2CentralApparatus::MakeTracksMwpc(const map<Double_t,Int_t> *tracksMwpc)
   
   Int_t iTrMwpc;
   for (map<Double_t,Int_t>::const_iterator iterTracksMwpc=tracksMwpc->begin(); iterTracksMwpc!=tracksMwpc->end(); ++iterTracksMwpc)
-  {
-    if (TooManyTracks()) break;
-    //
-    iTrMwpc = iterTracksMwpc->second;
-    if ( fMwpc->IsUsedWIE(iTrMwpc)) continue; // check if the strips or wires were already used
-    // Add a new track
-    AddTrack(kNullHit,
-	     fTracksMwpc[iTrMwpc].GetIinter(0),
-	     fTracksMwpc[iTrMwpc].GetIinter(1),
-	     kNullHit,
-	     fTracksMwpc[iTrMwpc].GetOrigin(),
-	     fTracksMwpc[iTrMwpc].GetDirCos(),
-	     fTracksMwpc[iTrMwpc].GetPsVertex());
-  }
+    {
+      if (TooManyTracks()) break;
+      //
+      iTrMwpc = iterTracksMwpc->second;
+      if ( fMwpc->IsUsedWIE(iTrMwpc)) continue; // check if the strips or wires were already used
+      // Add a new track
+      AddTrack(kNullHit,
+	       fTracksMwpc[iTrMwpc].GetIinter(0),
+	       fTracksMwpc[iTrMwpc].GetIinter(1),
+	       kNullHit,
+	       fTracksMwpc[iTrMwpc].GetOrigin(),
+	       fTracksMwpc[iTrMwpc].GetDirCos(),
+	       fTracksMwpc[iTrMwpc].GetPsVertex());
+    }
 }
 
 //_______________________________________________________________________________
@@ -846,47 +855,47 @@ void TA2CentralApparatus::MakeTracksTrue(const Int_t **iInters, const Int_t *nIn
   Double_t phi;
   TA2CentralTrack *track = fTracksSingleMwpc + fNtracksSingleMwpc;
   for (Int_t iCh=0; iCh<fNchambers; ++iCh)
-  {
-    for (Int_t iInter=0; iInter<nInters[iCh]; ++iInter)
     {
-      if (TooManyTracksSingleMwpc()) break;
-      //
-      inter = fMwpc->GetInters(iCh) + iInters[iCh][iInter];
-      if (fMwpc->IsUsedWIE(iCh,inter->GetIclI(),inter->GetIclW(),inter->GetIclE())) continue; // check if the strips or wires were already used
-      r[0] = inter->GetPosition();
-      for (Int_t iNaI=0; iNaI<fNclNaI; ++iNaI)
-      {
-	if (TooManyTracksSingleMwpc()) break;
-	//
-	if (IsUsedClNaI(iNaI)) continue; // Check if the clNaI was used already
-	//
-	r[1] = fPositionsNaI + iNaI;
-	phi = r[0]->Angle(*r[1]);
-	if (phi > fMaxPhiMwpcInterNaI) continue;
-	if (track->BuildTrack(*r[0],*r[1],-1.,fLimitsPsVertex))
+      for (Int_t iInter=0; iInter<nInters[iCh]; ++iInter)
 	{
-	  track->SetIintersMwpc(kNullHit,kNullHit); // Reset IintersMwpc
-	  track->SetIinterMwpc(iCh,iInters[iCh][iInter]);
-	  track->SetIclNaI(iNaI);
-	  mapMwpcInterNaI[phi] = fNtracksSingleMwpc;
-	  fPhiInterSingleMwpcNaI[fNtracksSingleMwpc] = phi*kRadToDeg;
-	  // Find the best PID association with the track
-	  fPhiTrackSingleMwpcPid[fNtracksSingleMwpc] = fMaxPhiTrackPid;
-	  track->SetIhitPid(kNullHit); // Reset IhitPid
-	  for (Int_t iPid=0; iPid<fNhitsPid; ++iPid)
-	  {
-	    phi = track->Angle(fPositionsPid[iPid]);
-	    if (TMath::Abs(phi) > TMath::Abs(fPhiTrackSingleMwpcPid[fNtracksSingleMwpc])) continue;
-	    fPhiTrackSingleMwpcPid[fNtracksSingleMwpc] = phi;
-	    track->SetIhitPid(iPid);
-	  }
-	  fPhiTrackSingleMwpcPid[fNtracksSingleMwpc] *= (track->GetIhitPid() == kNullHit) ? kNullFloat/fMaxPhiTrackPid : kRadToDeg;
-	  ++fNtracksSingleMwpc;
-	  ++track;
+	  if (TooManyTracksSingleMwpc()) break;
+	  //
+	  inter = fMwpc->GetInters(iCh) + iInters[iCh][iInter];
+	  if (fMwpc->IsUsedWIE(iCh,inter->GetIclI(),inter->GetIclW(),inter->GetIclE())) continue; // check if the strips or wires were already used
+	  r[0] = inter->GetPosition();
+	  for (Int_t iNaI=0; iNaI<fNclNaI; ++iNaI)
+	    {
+	      if (TooManyTracksSingleMwpc()) break;
+	      //
+	      if (IsUsedClNaI(iNaI)) continue; // Check if the clNaI was used already
+	      //
+	      r[1] = fPositionsNaI + iNaI;
+	      phi = r[0]->Angle(*r[1]);
+	      if (phi > fMaxPhiMwpcInterNaI) continue;
+	      if (track->BuildTrack(*r[0],*r[1],-1.,fLimitsPsVertex))
+		{
+		  track->SetIintersMwpc(kNullHit,kNullHit); // Reset IintersMwpc
+		  track->SetIinterMwpc(iCh,iInters[iCh][iInter]);
+		  track->SetIclNaI(iNaI);
+		  mapMwpcInterNaI[phi] = fNtracksSingleMwpc;
+		  fPhiInterSingleMwpcNaI[fNtracksSingleMwpc] = phi*kRadToDeg;
+		  // Find the best PID association with the track
+		  fPhiTrackSingleMwpcPid[fNtracksSingleMwpc] = fMaxPhiTrackPid;
+		  track->SetIhitPid(kNullHit); // Reset IhitPid
+		  for (Int_t iPid=0; iPid<fNhitsPid; ++iPid)
+		    {
+		      phi = track->Angle(fPositionsPid[iPid]);
+		      if (TMath::Abs(phi) > TMath::Abs(fPhiTrackSingleMwpcPid[fNtracksSingleMwpc])) continue;
+		      fPhiTrackSingleMwpcPid[fNtracksSingleMwpc] = phi;
+		      track->SetIhitPid(iPid);
+		    }
+		  fPhiTrackSingleMwpcPid[fNtracksSingleMwpc] *= (track->GetIhitPid() == kNullHit) ? kNullFloat/fMaxPhiTrackPid : kRadToDeg;
+		  ++fNtracksSingleMwpc;
+		  ++track;
+		}
+	    }
 	}
-      }
     }
-  }
   
   // Best tracks
   Int_t iTrack, iInterMwpc, iCh, iNaI;
@@ -901,7 +910,7 @@ void TA2CentralApparatus::MakeTracksTrue(const Int_t **iInters, const Int_t *nIn
     if (IsUsedClNaI(iNaI)) continue; // Check if the clNaI was used already
     // Add track
     fPhiMwpcInterNaI[fNtracks] = fPhiInterSingleMwpcNaI[iTrack];
-    fPhiTrackPid[fNtracks]     = fPhiTrackSingleMwpcPid[iTrack];
+    fPhiTrackPid[fNtracks] = fPhiTrackSingleMwpcPid[iTrack];
     AddTrack(fTracksSingleMwpc[iTrack]);
     ++fNtracksSingleMwpcBest;
   }
@@ -917,47 +926,47 @@ void TA2CentralApparatus::MakeTracksPidMwpc(const Int_t **iInters, const Int_t *
   Int_t iPid;
   TA2CentralTrack *track = fTracksSingleMwpc + fNtracksSingleMwpc;
   for (Int_t iCh=0; iCh<fNchambers; ++iCh)
-  {
-    for (Int_t iInter=0; iInter<nInters[iCh]; ++iInter)
     {
-      if (TooManyTracksSingleMwpc()) break;
-      if (TooManyTracks()) break;
-      //
-      inter = fMwpc->GetInters(iCh) + iInters[iCh][iInter];
-      if (fMwpc->IsUsedWIE(iCh,iInters[iCh][iInter])) continue; // check if the strips or wires were already used
-      // Find iPid correlated with the intersection
-      fPhiMwpcInterPid[fNtracks] = fMaxPhiMwpcInterPid;
-      iPid = kNullHit;
-      for (Int_t i=0; i<fNhitsPid; ++i)
-      {
-	phi = TVector2::Phi_mpi_pi( inter->GetPhi() - fPositionsPid[i].Phi() );
-	if (TMath::Abs(phi) > TMath::Abs(fPhiMwpcInterPid[fNtracks])) continue;
-	fPhiMwpcInterPid[fNtracks] = phi;
-	iPid = i;
-      }
-      if (iPid == kNullHit)
-      {
-	// There is no Pid hit correlated with the intersection
-	fPhiMwpcInterPid[fNtracks] = kNullFloat;
-	continue;
-      }
-      else
-      {
-	// There is a Pid hit correlated with the intersection, biuld a new track
-	track->BuildTrack(TVector3(0,0,0),*(inter->GetPosition()));
-	track->SetIhitPid(iPid);
-	track->SetIintersMwpc(kNullHit,kNullHit); // Reset IintersMwpc
-	track->SetIinterMwpc(iCh,iInters[iCh][iInter]);
-	track->SetIclNaI(kNullHit);
-	fPhiMwpcInterPid[fNtracks] *= kRadToDeg;
-	// Add a new track
-	AddTrack(*track);
-	++track;
-	++fNtracksSingleMwpc;
-	++fNtracksSingleMwpcBest;
-      }
+      for (Int_t iInter=0; iInter<nInters[iCh]; ++iInter)
+	{
+	  if (TooManyTracksSingleMwpc()) break;
+	  if (TooManyTracks()) break;
+	  //
+	  inter = fMwpc->GetInters(iCh) + iInters[iCh][iInter];
+	  if (fMwpc->IsUsedWIE(iCh,iInters[iCh][iInter])) continue; // check if the strips or wires were already used
+	  // Find iPid correlated with the intersection
+	  fPhiMwpcInterPid[fNtracks] = fMaxPhiMwpcInterPid;
+	  iPid = kNullHit;
+	  for (Int_t i=0; i<fNhitsPid; ++i)
+	    {
+	      phi = TVector2::Phi_mpi_pi( inter->GetPhi() - fPositionsPid[i].Phi() );
+	      if (TMath::Abs(phi) > TMath::Abs(fPhiMwpcInterPid[fNtracks])) continue;
+	      fPhiMwpcInterPid[fNtracks] = phi;
+	      iPid = i;
+	    }
+	  if (iPid == kNullHit)
+	    {
+	      // There is no Pid hit correlated with the intersection
+	      fPhiMwpcInterPid[fNtracks] = kNullFloat;
+	      continue;
+	    }
+	  else
+	    {
+	      // There is a Pid hit correlated with the intersection, biuld a new track
+	      track->BuildTrack(TVector3(0,0,0),*(inter->GetPosition()));
+	      track->SetIhitPid(iPid);
+	      track->SetIintersMwpc(kNullHit,kNullHit); // Reset IintersMwpc
+	      track->SetIinterMwpc(iCh,iInters[iCh][iInter]);
+	      track->SetIclNaI(kNullHit);
+	      fPhiMwpcInterPid[fNtracks] *= kRadToDeg;
+	      // Add a new track
+	      AddTrack(*track);
+	      ++track;
+	      ++fNtracksSingleMwpc;
+	      ++fNtracksSingleMwpcBest;
+	    }
+	}
     }
-  }
 }
 
 //_______________________________________________________________________________
@@ -968,28 +977,28 @@ void TA2CentralApparatus::MakeTracksPidNaI()
   Double_t phi;
   Int_t iHitPid;
   for (Int_t iNaI=0; iNaI<fNclNaI; ++iNaI)
-  {
-    if (TooManyTracks()) break;
-    if (IsUsedClNaI(iNaI)) continue; //Check if the clNaI was used already
-    // Find iHitPid correlated with the NaI cluster
-    fPhiPidNaI[fNtracks] = fMaxPhiPidNaI;
-    iHitPid = kNullHit;
-    for (Int_t iPid=0; iPid<fNhitsPid; ++iPid)
     {
-      phi = TVector2::Phi_mpi_pi( fPositionsPid[iPid].Phi() - fPositionsNaI[iNaI].Phi() );
-      if (TMath::Abs(phi) > TMath::Abs(fPhiPidNaI[fNtracks])) continue;
-      fPhiPidNaI[fNtracks] = phi;
-      iHitPid = iPid;
+      if (TooManyTracks()) break;
+      if (IsUsedClNaI(iNaI)) continue; //Check if the clNaI was used already
+      // Find iHitPid correlated with the NaI cluster
+      fPhiPidNaI[fNtracks] = fMaxPhiPidNaI;
+      iHitPid = kNullHit;
+      for (Int_t iPid=0; iPid<fNhitsPid; ++iPid)
+	{
+	  phi = TVector2::Phi_mpi_pi( fPositionsPid[iPid].Phi() - fPositionsNaI[iNaI].Phi() );
+	  if (TMath::Abs(phi) > TMath::Abs(fPhiPidNaI[fNtracks])) continue;
+	  fPhiPidNaI[fNtracks] = phi;
+	  iHitPid = iPid;
+	}
+      fPhiPidNaI[fNtracks] *= (iHitPid == kNullHit) ? kNullFloat/fMaxPhiPidNaI : kRadToDeg;
+      AddTrack(iHitPid,
+	       kNullHit,
+	       kNullHit,
+	       iNaI,
+	       TVector3(0,0,0),
+	       fPositionsNaI[iNaI],
+	       TVector3(0,0,0));
     }
-    fPhiPidNaI[fNtracks] *= (iHitPid == kNullHit) ? kNullFloat/fMaxPhiPidNaI : kRadToDeg;
-    AddTrack(iHitPid,
-	     kNullHit,
-	     kNullHit,
-	     iNaI,
-	     TVector3(0,0,0),
-	     fPositionsNaI[iNaI],
-	     TVector3(0,0,0));
-  }
   
 }
 
@@ -999,11 +1008,11 @@ void TA2CentralApparatus::CountNotUsedPid()
   // Count not used PID
   
   for (Int_t i=0; i<fNhitsPid; ++i)
-  {
-    if (IsUsedHitPid(i)) continue;
-    fIhitsPidNotUsed[i]++;
-    ++fNhitsPidNotUsed;
-  }
+    {
+      if (IsUsedHitPid(i)) continue;
+      fIhitsPidNotUsed[i]++;
+      ++fNhitsPidNotUsed;
+    }
   
 }
 
@@ -1014,14 +1023,14 @@ void TA2CentralApparatus::CountNotUsedIntersMwpc(const Int_t **iInters, const In
   
   const TA2MwpcIntersection *inter;
   for (Int_t iCh=0; iCh<fNchambers; ++iCh)
-  {
-    for (Int_t iInter=0; iInter<nInters[iCh]; ++iInter)
     {
-      inter = fMwpc->GetInters(iCh) + iInters[iCh][iInter];
-      if (fMwpc->IsUsedWIE(iCh,inter->GetIclI(),inter->GetIclW(),inter->GetIclE())) continue; // check if the strips or wires were already used
-      nIntersMwpcNotUsed[iCh]++;
+      for (Int_t iInter=0; iInter<nInters[iCh]; ++iInter)
+	{
+	  inter = fMwpc->GetInters(iCh) + iInters[iCh][iInter];
+	  if (fMwpc->IsUsedWIE(iCh,inter->GetIclI(),inter->GetIclW(),inter->GetIclE())) continue; // check if the strips or wires were already used
+	  nIntersMwpcNotUsed[iCh]++;
+	}
     }
-  }
   
 }
 
@@ -1031,24 +1040,24 @@ void TA2CentralApparatus::MakeVertexes()
   // Reconstruct all possible vertexes (based on 2 tracks)
   
   for (Int_t ii, i=0; i<fNchTracks-1; ++i)
-  {
-    ii = fIchTracks[i];
-    if ( !fTracks[ii].HasMwpc() || !fTracks[ii].HasNaI() ) continue;
-    for (Int_t jj, j=i+1; j<fNchTracks; ++j)
     {
-      jj = fIchTracks[j];
-      if ( !fTracks[jj].HasMwpc() || !fTracks[jj].HasNaI() ) continue;
-      //
-      fVertexes[fNvertexes] = fTracks[ii].Vertex(fTracks[jj],fTrackDist[fNvertexes]);
-      //
-      fVert[0][fNvertexes] = fVertexes[fNvertexes].X();
-      fVert[1][fNvertexes] = fVertexes[fNvertexes].Y();
-      fVert[2][fNvertexes] = fVertexes[fNvertexes].Z();
-      fVertR[fNvertexes]   = fVertexes[fNvertexes].Perp();
-      //
-      fIvertexes[ii][jj] = fIvertexes[jj][ii] = fNvertexes++;
+      ii = fIchTracks[i];
+      if ( !fTracks[ii].HasMwpc() || !fTracks[ii].HasNaI() ) continue;
+      for (Int_t jj, j=i+1; j<fNchTracks; ++j)
+	{
+	  jj = fIchTracks[j];
+	  if ( !fTracks[jj].HasMwpc() || !fTracks[jj].HasNaI() ) continue;
+	  //
+	  fVertexes[fNvertexes] = fTracks[ii].Vertex(fTracks[jj],fTrackDist[fNvertexes]);
+	  //
+	  fVert[0][fNvertexes] = fVertexes[fNvertexes].X();
+	  fVert[1][fNvertexes] = fVertexes[fNvertexes].Y();
+	  fVert[2][fNvertexes] = fVertexes[fNvertexes].Z();
+	  fVertR[fNvertexes] = fVertexes[fNvertexes].Perp();
+	  //
+	  fIvertexes[ii][jj] = fIvertexes[jj][ii] = fNvertexes++;
+	}
     }
-  }
   
 }
 
@@ -1064,33 +1073,33 @@ void TA2CentralApparatus::AddTrack(const Int_t iHitPid, const Int_t iInterMwpc0,
   track.SetTrack(iHitPid,iInterMwpc0,iInterMwpc1,iClNaI,orig,dircos,psvertex);
   // Set Pid info
   if (track.HasPid())
-  {
-    track.SetEhitPidCorr(CalcEhitPid(iHitPid,orig,dircos));
-    track.SetEhitPid(fPid->GetEnergy(fHitsPid[iHitPid]));
-    if (fPid->IsTime()) track.SetThitPid(fPid->GetTime(fHitsPid[iHitPid]));
-    track.SetPhiPid(TVector2::Phi_0_2pi(fPositionsPid[iHitPid].Phi()));
-  }
+    {
+      track.SetEhitPidCorr(CalcEhitPid(iHitPid,orig,dircos));
+      track.SetEhitPid(fPid->GetEnergy(fHitsPid[iHitPid]));
+      if (fPid->IsTime()) track.SetThitPid(fPid->GetTime(fHitsPid[iHitPid]));
+      track.SetPhiPid(TVector2::Phi_0_2pi(fPositionsPid[iHitPid].Phi()));
+    }
   // Set MWPC info
   if (track.HasMwpc())
-  {
-    track.SetEtrackMwpc(CalcEtrackMwpc(iInterMwpc0,iInterMwpc1));
-    //   track.SetTtrackMwpc(); // TODO
-  }
+    {
+      track.SetEtrackMwpc(CalcEtrackMwpc(iInterMwpc0,iInterMwpc1));
+      // track.SetTtrackMwpc(); // TODO
+    }
   // Set NaI info
   if (track.HasNaI())
-  {
-    track.SetEclNaI(fClNaI[fIdClNaI[iClNaI]]->GetEnergy());
-    track.SetEclNaICorr(CalcEclNaI(iClNaI));
-    track.SetTclNaI(fClNaI[fIdClNaI[iClNaI]]->GetTime());
-    track.SetMclNaI(fClNaI[fIdClNaI[iClNaI]]->GetNhits());
-    track.SetCentralIndexNaI(fClNaI[fIdClNaI[iClNaI]]->GetIndex());
-    track.SetThetaNaI(fPositionsNaI[iClNaI].Theta());
-    track.SetPhiNaI(TVector2::Phi_0_2pi(fPositionsNaI[iClNaI].Phi()));
-    track.SetSigmaTimeNaI(fNaI->GetSigmaTime());
-    track.SetSigmaEnergyNaI(fNaI->GetSigmaEnergy(track.GetEclNaI()));
-    track.SetSigmaPhiNaI(fNaI->GetSigmaPhi(fPositionsNaI[iClNaI].Theta()));
-    track.SetSigmaThetaNaI(fNaI->GetSigmaTheta());
-  }
+    {
+      track.SetEclNaI(fClNaI[fIdClNaI[iClNaI]]->GetEnergy());
+      track.SetEclNaICorr(CalcEclNaI(iClNaI));
+      track.SetTclNaI(fClNaI[fIdClNaI[iClNaI]]->GetTime());
+      track.SetMclNaI(fClNaI[fIdClNaI[iClNaI]]->GetNhits());
+      track.SetCentralIndexNaI(fClNaI[fIdClNaI[iClNaI]]->GetIndex());
+      track.SetThetaNaI(fPositionsNaI[iClNaI].Theta());
+      track.SetPhiNaI(TVector2::Phi_0_2pi(fPositionsNaI[iClNaI].Phi()));
+      track.SetSigmaTimeNaI(fNaI->GetSigmaTime());
+      track.SetSigmaEnergyNaI(fNaI->GetSigmaEnergy(track.GetEclNaI()));
+      track.SetSigmaPhiNaI(fNaI->GetSigmaPhi(fPositionsNaI[iClNaI].Theta()));
+      track.SetSigmaThetaNaI(fNaI->GetSigmaTheta());
+    }
   
   // Mark the PID hit as "used"
   if (iHitPid != kNullHit) SetUsedHitPid(iHitPid);
@@ -1107,20 +1116,20 @@ void TA2CentralApparatus::AddTrack(const Int_t iHitPid, const Int_t iInterMwpc0,
     fIchTracks[fNchTracks++] = fNtracks;
   
   // For histograms
-  fTrackType[fNtracks]  = track.GetType();
+  fTrackType[fNtracks] = track.GetType();
   fTrackTheta[fNtracks] = track.GetTheta()*kRadToDeg;
-  fTrackPhi[fNtracks]   = TVector2::Phi_0_2pi(track.GetPhi())*kRadToDeg;
-  fEclNaI[fNtracks]     = track.GetEclNaI();
-  fEhitPid[fNtracks]    = track.GetEhitPid();
+  fTrackPhi[fNtracks] = TVector2::Phi_0_2pi(track.GetPhi())*kRadToDeg;
+  fEclNaI[fNtracks] = track.GetEclNaI();
+  fEhitPid[fNtracks] = track.GetEhitPid();
   fEtrackMwpc[fNtracks] = track.GetEtrackMwpc();
   if ( track.HasMwpc() && track.HasNaI() )
-  {
-    // To plot PsVertex only for NaI & Mwpc tracks
-    fPsVertex[0][fNtracks] = track.GetPsVertex().X();
-    fPsVertex[1][fNtracks] = track.GetPsVertex().Y();
-    fPsVertex[2][fNtracks] = track.GetPsVertex().Z();
-    fPsVertexR[fNtracks]   = track.GetPsVertex().Perp();
-  }
+    {
+      // To plot PsVertex only for NaI & Mwpc tracks
+      fPsVertex[0][fNtracks] = track.GetPsVertex().X();
+      fPsVertex[1][fNtracks] = track.GetPsVertex().Y();
+      fPsVertex[2][fNtracks] = track.GetPsVertex().Z();
+      fPsVertexR[fNtracks] = track.GetPsVertex().Perp();
+    }
   
   // Add a new TA2Particle to the fParticleInfo array
   AddParticleInfo(track);
@@ -1154,33 +1163,33 @@ void TA2CentralApparatus::AddParticleInfo(const TA2CentralTrack &track)
   Int_t m, iPid;
   //Check dE/E cuts
   if ( fPCut && track.HasPid() && track.HasNaI() )
-  {
-    iPid = fHitsPid[track.GetIhitPid()];
-    m = fPCutStart[iPid];					// Start cut index for pid[iPid]
-    for (Int_t i=0; i<fNSectorCut[iPid]; ++i, ++m)		// Loop over specified cuts
     {
-      if ( static_cast<TA2Cut2DM<Double_t>* >(fPCut[m])->TestXY(track.GetEclNaI(),track.GetEhitPid()) )	// Condition met?
-      {
-	fType[fNparticle] = GetCutPDGIndex(m);			//Set particle ID code...
-	mass = fParticleID->GetMassMeV(fType[fNparticle]);	//...and particle mass
-	break;							// cut OK so exit loop
-      }
+      iPid = fHitsPid[track.GetIhitPid()];
+      m = fPCutStart[iPid];	// Start cut index for pid[iPid]
+      for (Int_t i=0; i<fNSectorCut[iPid]; ++i, ++m)	// Loop over specified cuts
+	{
+	  if ( static_cast<TA2Cut2DM<Double_t>* >(fPCut[m])->TestXY(track.GetEclNaI(),track.GetEhitPid()) )	// Condition met?
+	    {
+	      fType[fNparticle] = GetCutPDGIndex(m);	//Set particle ID code...
+	      mass = fParticleID->GetMassMeV(fType[fNparticle]);	//...and particle mass
+	      break;	// cut OK so exit loop
+	    }
+	}
     }
-  }
   else if ( track.IsNeutral() )
-  {
-    fType[fNparticle] = kGamma;
-  }
+    {
+      fType[fNparticle] = kGamma;
+    }
   
   //
-  fP4[fNparticle]      = TA2Math::LorentzVector(track.GetDirCos().Unit(), track.GetEclNaI(), mass);
-  fTime[fNparticle]    = track.GetTclNaI();
-  fSize[fNparticle]    = track.GetMclNaI();
+  fP4[fNparticle] = TA2Math::LorentzVector(track.GetDirCos().Unit(), track.GetEclNaI(), mass);
+  fTime[fNparticle] = track.GetTclNaI();
+  fSize[fNparticle] = track.GetMclNaI();
   fCentral[fNparticle] = track.GetCentralIndexNaI();
   fDet[fNparticle] = EDetUndef;
-  if (track.HasNaI())  fDet[fNparticle] += EDetNaI;
+  if (track.HasNaI()) fDet[fNparticle] += EDetNaI;
   if (track.HasMwpc()) fDet[fNparticle] += EDetMWPC;
-  if (track.HasPid())  fDet[fNparticle] += EDetPID;
+  if (track.HasPid()) fDet[fNparticle] += EDetPID;
   //
   fParticleInfo[fNparticle].SetP4(fP4[fNparticle]);
   fParticleInfo[fNparticle].SetTime(fTime[fNparticle]);
@@ -1195,12 +1204,12 @@ void TA2CentralApparatus::AddParticleInfo(const TA2CentralTrack &track)
   fParticleInfo[fNparticle].SetParticleIDA(fType[fNparticle]);
   fParticleInfo[fNparticle].SetVetoTime(track.GetThitPid());
   fParticleInfo[fNparticle].SetVetoEnergy(CalcEhitPid(track.GetIhitPid(),track.GetOrigin(),track.GetDirCos())); // fParticleInfo[fNparticle].SetVetoEnergy(track.GetEhitPid());
-//   fParticleInfo[fNparticle].SetVetoIndex(track.GetIhitPid());
+  // fParticleInfo[fNparticle].SetVetoIndex(track.GetIhitPid());
   if (track.HasPid()) fParticleInfo[fNparticle].SetVetoIndex(fHitsPid[track.GetIhitPid()]);
   fParticleInfo[fNparticle].SetDetectorA( fDet[fNparticle] - fParticleInfo[fNparticle].GetDetectors() );
-//  fParticleInfo[fNparticle].SetIintersMwpc(track.GetIinterMwpc(0),track.GetIinterMwpc(1));
-//  fParticleInfo[fNparticle].SetEtrackMwpc(track.GetEtrackMwpc());
-//  fParticleInfo[fNparticle].SetTtrackMwpc(track.GetTtrackMwpc());
+  // fParticleInfo[fNparticle].SetIintersMwpc(track.GetIinterMwpc(0),track.GetIinterMwpc(1));
+  // fParticleInfo[fNparticle].SetEtrackMwpc(track.GetEtrackMwpc());
+  // fParticleInfo[fNparticle].SetTtrackMwpc(track.GetTtrackMwpc());
   
   ++fNparticle;
   
@@ -1219,10 +1228,10 @@ void TA2CentralApparatus::Test(Bool_t WantDisplay)
   Int_t fVerbose = 2;
 
   if (fDisplay)
-  {
-    fWait = kTRUE;
-    InitGeometry();
-  }
+    {
+      fWait = kTRUE;
+      InitGeometry();
+    }
   
   // Print file name & event number
   cout << "____________________________________ TA2CentralApparatus _______________________________"<< endl;
@@ -1232,92 +1241,92 @@ void TA2CentralApparatus::Test(Bool_t WantDisplay)
   cout << "> NaI" << endl;
   cout << "Ncl: " << fNclNaI << endl;
   for (Int_t i=0; i<fNclNaI; ++i)
-  {
-    cout << i << "\tPhi: " << TVector2::Phi_0_2pi(fPositionsNaI[i].Phi())*kRadToDeg << "\tTheta: " << fPositionsNaI[i].Theta()*kRadToDeg << endl;
-  }
+    {
+      cout << i << "\tPhi: " << TVector2::Phi_0_2pi(fPositionsNaI[i].Phi())*kRadToDeg << "\tTheta: " << fPositionsNaI[i].Theta()*kRadToDeg << endl;
+    }
   
   // Pid
   cout << "> Pid" << endl;
   cout << "Npid: " << fNhitsPid << "\tNpidNotUsed: " << fNhitsPidNotUsed << endl;
   cout << "NotUsedPidHits:\t";
   for (Int_t i=0; i<fNhitsPid; ++i)
-  {
-    cout << fIhitsPidNotUsed[i] << " ";
-  }
+    {
+      cout << fIhitsPidNotUsed[i] << " ";
+    }
   cout << endl;
   cout << "UsedPidHits:\t";
   for (Int_t i=0; i<fNhitsPid; ++i)
-  {
-    cout << fIhitsPidUsed[i] << " ";
-  }
+    {
+      cout << fIhitsPidUsed[i] << " ";
+    }
   cout << endl;
   for (Int_t i=0; i<fNhitsPid; ++i)
-  {
-    cout << i << "\tPhi: "<< TVector2::Phi_0_2pi(fPositionsPid[i].Phi())*kRadToDeg << endl;
-  }
+    {
+      cout << i << "\tPhi: "<< TVector2::Phi_0_2pi(fPositionsPid[i].Phi())*kRadToDeg << endl;
+    }
   
   // Posslible tracks with 2 MWPC
   // True
   cout << "> fMapMwpcTrueTrackNaI" << endl;
   for (map<Double_t,pair<Int_t,Int_t> >::const_iterator iterPhi = fMapMwpcTrueTrackNaI.begin(); iterPhi != fMapMwpcTrueTrackNaI.end(); ++iterPhi)
-  {
-    cout << "dPhi: " << iterPhi->first*kRadToDeg << "\tiTrMwpc: " << iterPhi->second.first << "\tiClNaI: " << iterPhi->second.second << endl;
-  }
+    {
+      cout << "dPhi: " << iterPhi->first*kRadToDeg << "\tiTrMwpc: " << iterPhi->second.first << "\tiClNaI: " << iterPhi->second.second << endl;
+    }
   
   // TrueCandidate
   cout << "> fMapMwpcTrueCandidateTrackNaI" << endl;
   for (map<Double_t,pair<Int_t,Int_t> >::const_iterator iterPhi = fMapMwpcTrueCandidateTrackNaI.begin(); iterPhi != fMapMwpcTrueCandidateTrackNaI.end(); ++iterPhi)
-  {
-    cout << "dPhi: " << iterPhi->first*kRadToDeg << "\tiTrMwpc: " << iterPhi->second.first << "\tiClNaI: " << iterPhi->second.second << endl;
-  }
+    {
+      cout << "dPhi: " << iterPhi->first*kRadToDeg << "\tiTrMwpc: " << iterPhi->second.first << "\tiClNaI: " << iterPhi->second.second << endl;
+    }
   
   // Candidate
   cout << "> fMapMwpcCandidateTrackNaI" << endl;
   for (map<Double_t,pair<Int_t,Int_t> >::const_iterator iterPhi = fMapMwpcCandidateTrackNaI.begin(); iterPhi != fMapMwpcCandidateTrackNaI.end(); ++iterPhi)
-  {
-    cout << "dPhi: " << iterPhi->first*kRadToDeg << "\tiTrMwpc: " << iterPhi->second.first << "\tiClNaI: " << iterPhi->second.second << endl;
-  }
+    {
+      cout << "dPhi: " << iterPhi->first*kRadToDeg << "\tiTrMwpc: " << iterPhi->second.first << "\tiClNaI: " << iterPhi->second.second << endl;
+    }
   
   // Tracks with 1 MWPC
   cout << "> Possible tracks with SingleMwpc" << endl;
   cout << "NtracksSingleMwpc: " << fNtracksSingleMwpc << endl;
   for (Int_t i=0; i<fNtracksSingleMwpc; ++i)
-  {
-    cout << i;
-    cout << "\tiHitPid: " << fTracksSingleMwpc[i].GetIhitPid();
-    cout << "\tiInterMwpc0: " << fTracksSingleMwpc[i].GetIinterMwpc(0) << "\tiInterMwpc1: " << fTracksSingleMwpc[i].GetIinterMwpc(1);
-    cout << "\tiClNaI: " << fTracksSingleMwpc[i].GetIclNaI();
-    cout << "\tType: " << fTracksSingleMwpc[i].GetType();
-    cout << "\tPhi: " << TVector2::Phi_0_2pi(fTracksSingleMwpc[i].GetPhi())*kRadToDeg << "\tTheta: " << fTracksSingleMwpc[i].GetTheta()*kRadToDeg;
-    cout << "\tPhiInterMwpcClNaI: " << fPhiInterSingleMwpcNaI[i];
-    cout << "\tPhiTrSingleMwpcPid: " << fPhiTrackSingleMwpcPid[i] << endl;
-  }
+    {
+      cout << i;
+      cout << "\tiHitPid: " << fTracksSingleMwpc[i].GetIhitPid();
+      cout << "\tiInterMwpc0: " << fTracksSingleMwpc[i].GetIinterMwpc(0) << "\tiInterMwpc1: " << fTracksSingleMwpc[i].GetIinterMwpc(1);
+      cout << "\tiClNaI: " << fTracksSingleMwpc[i].GetIclNaI();
+      cout << "\tType: " << fTracksSingleMwpc[i].GetType();
+      cout << "\tPhi: " << TVector2::Phi_0_2pi(fTracksSingleMwpc[i].GetPhi())*kRadToDeg << "\tTheta: " << fTracksSingleMwpc[i].GetTheta()*kRadToDeg;
+      cout << "\tPhiInterMwpcClNaI: " << fPhiInterSingleMwpcNaI[i];
+      cout << "\tPhiTrSingleMwpcPid: " << fPhiTrackSingleMwpcPid[i] << endl;
+    }
   cout << "NtracksTrueSingleMwpc: " << fMapMwpcTrueInterNaI.size() << endl;
   for (map<Double_t,Int_t>::const_iterator iter=fMapMwpcTrueInterNaI.begin(); iter!=fMapMwpcTrueInterNaI.end(); ++iter)
-  {
-    cout << "PhiInterSingleMwpcNaI: " << iter->first << "\tiTracksSingleMwpc: " << iter->second << endl;
-  }
+    {
+      cout << "PhiInterSingleMwpcNaI: " << iter->first << "\tiTracksSingleMwpc: " << iter->second << endl;
+    }
   cout << "NtracksCandidatesSingleMwpc: " << fMapMwpcCandidateInterNaI.size() << endl;
   for (map<Double_t,Int_t>::const_iterator iter=fMapMwpcCandidateInterNaI.begin(); iter!=fMapMwpcCandidateInterNaI.end(); ++iter)
-  {
-    cout << "PhiInterSingleMwpcNaI: " << iter->first << "\tiTracksSingleMwpc: " << iter->second << endl;
-  }
+    {
+      cout << "PhiInterSingleMwpcNaI: " << iter->first << "\tiTracksSingleMwpc: " << iter->second << endl;
+    }
   cout << "NtracksSingleMwpcBest: " << fNtracksSingleMwpcBest << endl;
   for (Int_t i=0; i<fNchambers; ++i)
-  {
-    cout << "iCh" << i << ":" << "\tNintersTrueMwpcNotUsed: " << fNintersTrueMwpcNotUsed[i] << "\tNintersCandidateMwpcNotUsed: " << fNintersCandidateMwpcNotUsed[i] << endl;
-  }
+    {
+      cout << "iCh" << i << ":" << "\tNintersTrueMwpcNotUsed: " << fNintersTrueMwpcNotUsed[i] << "\tNintersCandidateMwpcNotUsed: " << fNintersCandidateMwpcNotUsed[i] << endl;
+    }
   
   // Tracks
   cout << "===================== Tracks =======================" << endl;
   cout << "Ntracks: " << fNtracks << "\tNch: " << fNchTracks << "\tNne: " << fNneTracks << endl;
   for (Int_t i=0; i<fNtracks; ++i)
-  {
-    cout << "\tiHitPid: " << fTracks[i].GetIhitPid();
-    cout << "\tiInterMwpc0: " << fTracks[i].GetIinterMwpc(0) << "\tiInterMwpc1: " << fTracks[i].GetIinterMwpc(1);
-    cout << "\tiClNaI: " << fTracks[i].GetIclNaI();
-    cout << "\tType: " << fTracks[i].GetType() << "\tPhi: " << TVector2::Phi_0_2pi(fTracks[i].GetPhi())*kRadToDeg << "\tTheta: " << fTracks[i].GetTheta()*kRadToDeg << "\tiCh: " << fTracks[i].HasSingleMwpc()-1 << endl;
-  }
+    {
+      cout << "\tiHitPid: " << fTracks[i].GetIhitPid();
+      cout << "\tiInterMwpc0: " << fTracks[i].GetIinterMwpc(0) << "\tiInterMwpc1: " << fTracks[i].GetIinterMwpc(1);
+      cout << "\tiClNaI: " << fTracks[i].GetIclNaI();
+      cout << "\tType: " << fTracks[i].GetType() << "\tPhi: " << TVector2::Phi_0_2pi(fTracks[i].GetPhi())*kRadToDeg << "\tTheta: " << fTracks[i].GetTheta()*kRadToDeg << "\tiCh: " << fTracks[i].HasSingleMwpc()-1 << endl;
+    }
   
   // start display
   if (fDisplay) {
@@ -1327,7 +1336,7 @@ void TA2CentralApparatus::Test(Bool_t WantDisplay)
       cout << "==============================================================" << endl;
       cout << "========================== MY TESTS ==========================" << endl;
       cout << "==============================================================" << endl;
-      cout << "Event # " << gAN->GetNEvent() << endl; 
+      cout << "Event # " << gAN->GetNEvent() << endl;
       cout << "In this event " << fNtracks << " tracks have been found " << endl;
     }
 
@@ -1349,7 +1358,7 @@ void TA2CentralApparatus::Test(Bool_t WantDisplay)
 	  tempx[j] = xCB[j][iCbSect]; tempy[j] = yCB[j][iCbSect];
 	}
 	if (TMath::IsInside(xcb[iNaI], ycb[iNaI], 5, tempx, tempy)) {
-	  contourCB[iCbSect]->SetFillStyle(3001); 
+	  contourCB[iCbSect]->SetFillStyle(3001);
 	  contourCB[iCbSect]->SetFillColor(kGreen);
 	  for (Int_t iTrk=0; iTrk<fNtracks; iTrk++) {
 	    if (iNaI == fTracks[iTrk].GetIclNaI())
@@ -1416,9 +1425,9 @@ void TA2CentralApparatus::Test(Bool_t WantDisplay)
 	}
       }
     }
-    c->Update();    c->Modified();
-    c2->Update();   c2->Modified();
-    c3->Update();   c3->Modified();
+    c->Update(); c->Modified();
+    c2->Update(); c2->Modified();
+    c3->Update(); c3->Modified();
    
 
 
@@ -1439,9 +1448,9 @@ void TA2CentralApparatus::Test(Bool_t WantDisplay)
       for (int iSect=0; iSect<25; iSect++) {
 	Double_t tempx[5], tempy[5];
 	for (int j=0; j<5; j++) {
-	  tempx[j] = xPID[j][iSect]; tempy[j] = yPID[j][iSect]; 
+	  tempx[j] = xPID[j][iSect]; tempy[j] = yPID[j][iSect];
 	}
- 	if (TMath::IsInside(xpid[iPid], ypid[iPid], 5, tempx, tempy)) {
+	if (TMath::IsInside(xpid[iPid], ypid[iPid], 5, tempx, tempy)) {
 	  contourPID[iSect]->SetFillStyle(3001);
 	  contourPID[iSect]->SetFillColor(kBlack);
 	  for (Int_t iTrk=0; iTrk<fNtracks; iTrk++) {
@@ -1449,7 +1458,7 @@ void TA2CentralApparatus::Test(Bool_t WantDisplay)
 	      contourPID[iSect]->SetFillStyle(1001);
 	  }
 	  c->cd(); contourPID[iSect]->Draw("same");
- 	}
+	}
       }
     }
     c->Update();
@@ -1489,41 +1498,41 @@ void TA2CentralApparatus::Test(Bool_t WantDisplay)
       if (fVerbose>0)
 	cout << "--> " << fMwpc->GetNinters(iCh) << " intersections (stars)" << endl;
       for (Int_t iInt = 0; iInt<fMwpc->GetNinters(iCh); iInt++) {
- 	Int_t nW = fMwpc->GetInters(iCh, iInt)->GetIclW();
-  	if (nW != -1)
-  	  w[iCh][nW]->Delete();
- 	xint[iCh][iInt] = fMwpc->GetInters(iCh, iInt)->GetPosition()->X();
- 	yint[iCh][iInt] = fMwpc->GetInters(iCh, iInt)->GetPosition()->Y();
+	Int_t nW = fMwpc->GetInters(iCh, iInt)->GetIclW();
+	if (nW != -1)
+	  w[iCh][nW]->Delete();
+	xint[iCh][iInt] = fMwpc->GetInters(iCh, iInt)->GetPosition()->X();
+	yint[iCh][iInt] = fMwpc->GetInters(iCh, iInt)->GetPosition()->Y();
 	if (fVerbose>1)
-	  cout << "intersection " << iInt << " using wire cluster " << nW <<  "\t ==> (" << xint[iCh][iInt] << ", " << yint[iCh][iInt] << ")" << endl;
-	
- 	inter[iCh][iInt] = new TMarker(xint[iCh][iInt], yint[iCh][iInt], 29);
- 	inter[iCh][iInt]->SetMarkerSize(1.2);
- 	if (iCh==0) inter[iCh][iInt]->SetMarkerColor(kAzure+7);
- 	else 	inter[iCh][iInt]->SetMarkerColor(kBlue);
- 	c->cd(); inter[iCh][iInt]->Draw("same");
-	
- 	// yz plane
- 	zint[iCh][iInt] = fMwpc->GetInters(iCh, iInt)->GetPosition()->Z();
- 	inter_yz[iCh][iInt] = new TMarker(zint[iCh][iInt], yint[iCh][iInt], 29);
- 	inter_yz[iCh][iInt]->SetMarkerSize(1.2);
- 	if (iCh==0) inter_yz[iCh][iInt]->SetMarkerColor(kAzure+7);
- 	else 	inter_yz[iCh][iInt]->SetMarkerColor(kBlue);
- 	c2->cd(); inter_yz[iCh][iInt]->Draw("same");
+	  cout << "intersection " << iInt << " using wire cluster " << nW << "\t ==> (" << xint[iCh][iInt] << ", " << yint[iCh][iInt] << ")" << endl;
 
- 	// xz plane
-  	inter_xz[iCh][iInt] = new TMarker(zint[iCh][iInt], xint[iCh][iInt], 29);
- 	inter_xz[iCh][iInt]->SetMarkerSize(1.2);
- 	if (iCh==0) inter_xz[iCh][iInt]->SetMarkerColor(kAzure+7);
- 	else 	inter_xz[iCh][iInt]->SetMarkerColor(kBlue);
- 	c3->cd(); inter_xz[iCh][iInt]->Draw("same");
+	inter[iCh][iInt] = new TMarker(xint[iCh][iInt], yint[iCh][iInt], 29);
+	inter[iCh][iInt]->SetMarkerSize(1.2);
+	if (iCh==0) inter[iCh][iInt]->SetMarkerColor(kAzure+7);
+	else inter[iCh][iInt]->SetMarkerColor(kBlue);
+	c->cd(); inter[iCh][iInt]->Draw("same");
+
+	// yz plane
+	zint[iCh][iInt] = fMwpc->GetInters(iCh, iInt)->GetPosition()->Z();
+	inter_yz[iCh][iInt] = new TMarker(zint[iCh][iInt], yint[iCh][iInt], 29);
+	inter_yz[iCh][iInt]->SetMarkerSize(1.2);
+	if (iCh==0) inter_yz[iCh][iInt]->SetMarkerColor(kAzure+7);
+	else inter_yz[iCh][iInt]->SetMarkerColor(kBlue);
+	c2->cd(); inter_yz[iCh][iInt]->Draw("same");
+
+	// xz plane
+	inter_xz[iCh][iInt] = new TMarker(zint[iCh][iInt], xint[iCh][iInt], 29);
+	inter_xz[iCh][iInt]->SetMarkerSize(1.2);
+	if (iCh==0) inter_xz[iCh][iInt]->SetMarkerColor(kAzure+7);
+	else inter_xz[iCh][iInt]->SetMarkerColor(kBlue);
+	c3->cd(); inter_xz[iCh][iInt]->Draw("same");
       }
-      c->Update();    c->Modified();
-      c2->Update();   c2->Modified();
-      c3->Update();   c3->Modified();
+      c->Update(); c->Modified();
+      c2->Update(); c2->Modified();
+      c3->Update(); c3->Modified();
 
       // check for MWPC tracks
-      if (fVerbose>0) 
+      if (fVerbose>0)
 	cout << "--> " << fMwpc->GetNtracks() << " tracks using both MWPCs (full circles and thin line)" <<endl;
       for (Int_t iChTrk=0; iChTrk<fMwpc->GetNtracks(); iChTrk++) {
 	iInter[iCh][iChTrk] = fMwpc->GetTrack(iChTrk)->GetIinter(iCh);
@@ -1534,44 +1543,44 @@ void TA2CentralApparatus::Test(Bool_t WantDisplay)
 	// yz plane
 	inter_yz[iCh][iInter[iCh][iChTrk]]->SetMarkerStyle(20);
 	inter_yz[iCh][iInter[iCh][iChTrk]]->SetMarkerSize(1.0);
-      	ztrk[iCh][iChTrk] = zint[iCh][iInter[iCh][iChTrk]];
+	ztrk[iCh][iChTrk] = zint[iCh][iInter[iCh][iChTrk]];
 	// xz plane
 	inter_xz[iCh][iInter[iCh][iChTrk]]->SetMarkerStyle(20);
 	inter_xz[iCh][iInter[iCh][iChTrk]]->SetMarkerSize(1.0);
       }
-      c->Update();       c->Modified();
-      c2->Update();      c2->Modified();
-      c3->Update();      c3->Modified();
+      c->Update(); c->Modified();
+      c2->Update(); c2->Modified();
+      c3->Update(); c3->Modified();
 
       // "global" tracks
-      for (Int_t iTrk=0; iTrk<fNtracks; ++iTrk) {    
+      for (Int_t iTrk=0; iTrk<fNtracks; ++iTrk) {
 	iItrk[iCh][iTrk] = fTracks[iTrk].GetIinterMwpc(iCh);
 	if (iItrk[iCh][iTrk] != -1) {
- 	  inter[iCh][iItrk[iCh][iTrk]]->SetMarkerStyle(21);
+	  inter[iCh][iItrk[iCh][iTrk]]->SetMarkerStyle(21);
 	  inter[iCh][iItrk[iCh][iTrk]]->SetMarkerSize(1.0);
- 	  xmwpc[iCh][iTrk] = xint[iCh][iItrk[iCh][iTrk]];
- 	  ymwpc[iCh][iTrk] = yint[iCh][iItrk[iCh][iTrk]]; 
-	  
+	  xmwpc[iCh][iTrk] = xint[iCh][iItrk[iCh][iTrk]];
+	  ymwpc[iCh][iTrk] = yint[iCh][iItrk[iCh][iTrk]];
+
 	  // yz plane
- 	  inter_yz[iCh][iItrk[iCh][iTrk]]->SetMarkerStyle(21);
+	  inter_yz[iCh][iItrk[iCh][iTrk]]->SetMarkerStyle(21);
 	  inter_yz[iCh][iItrk[iCh][iTrk]]->SetMarkerSize(1.0);
- 	  zmwpc[iCh][iTrk] = zint[iCh][iItrk[iCh][iTrk]];
+	  zmwpc[iCh][iTrk] = zint[iCh][iItrk[iCh][iTrk]];
 
 	  // xz plane
- 	  inter_xz[iCh][iItrk[iCh][iTrk]]->SetMarkerStyle(21);
+	  inter_xz[iCh][iItrk[iCh][iTrk]]->SetMarkerStyle(21);
 	  inter_xz[iCh][iItrk[iCh][iTrk]]->SetMarkerSize(1.0);
 	}
       }
-      c->Update();      c->Modified();
-      c2->Update();     c2->Modified();
-      c2->Update();     c3->Modified();
+      c->Update(); c->Modified();
+      c2->Update(); c2->Modified();
+      c2->Update(); c3->Modified();
     }
 
 
     TLine *trkl[20], *trkl_yz[20], *trkl_xz[20];
     for (Int_t iChTrk=0; iChTrk<fMwpc->GetNtracks(); iChTrk++) {
       if (fVerbose>1)
-	cout << "Track " << iChTrk << " using intersection " << fMwpc->GetTrack(iChTrk)->GetIinter(0) << " on MWPC0 and intersection " << fMwpc->GetTrack(iChTrk)->GetIinter(1) << " on MWPC1" << endl; 
+	cout << "Track " << iChTrk << " using intersection " << fMwpc->GetTrack(iChTrk)->GetIinter(0) << " on MWPC0 and intersection " << fMwpc->GetTrack(iChTrk)->GetIinter(1) << " on MWPC1" << endl;
 
       trkl[iChTrk] = new TLine(xtrk[0][iChTrk], ytrk[0][iChTrk], xtrk[1][iChTrk], ytrk[1][iChTrk]);
       c->cd(); trkl[iChTrk]->Draw("same");
@@ -1584,16 +1593,16 @@ void TA2CentralApparatus::Test(Bool_t WantDisplay)
       trkl_xz[iChTrk] = new TLine(ztrk[0][iChTrk], xtrk[0][iChTrk], ztrk[1][iChTrk], xtrk[1][iChTrk]);
       c3->cd(); trkl_xz[iChTrk]->Draw("same");
     }
-    c->Update();      c->Modified();
-    c2->Update();     c2->Modified();
-    c3->Update();     c3->Modified();
+    c->Update(); c->Modified();
+    c2->Update(); c2->Modified();
+    c3->Update(); c3->Modified();
 
     if (fVerbose>0) {
       cout << endl;
       cout << "----------------- " << fNtracks << " tracks (full squares and red lines) -----------------" << endl;
     }
 
-    for (Int_t iTrk=0; iTrk<fNtracks; ++iTrk) {    
+    for (Int_t iTrk=0; iTrk<fNtracks; ++iTrk) {
       if (iItrk[0][iTrk] != -1 && iItrk[1][iTrk] != -1) {
 	TLine *l = new TLine(xmwpc[0][iTrk], ymwpc[0][iTrk], xmwpc[1][iTrk], ymwpc[1][iTrk]);
 	c->cd(); l->SetLineWidth(2); l->SetLineColor(kRed); l->Draw("same");
@@ -1620,7 +1629,7 @@ void TA2CentralApparatus::Test(Bool_t WantDisplay)
 	case 8:
 	  cout << "Track " << iTrk << " using cluster " << fTracks[iTrk].GetIclNaI() << " on CB" << endl;
 	  break;
-	case 9: 
+	case 9:
 	  cout << "Track " << iTrk << " using cluster " << fTracks[iTrk].GetIhitPid() << " on PID and cluster " << fTracks[iTrk].GetIclNaI() << " on CB" << endl;
 	  break;
 	case 10:
@@ -1638,33 +1647,49 @@ void TA2CentralApparatus::Test(Bool_t WantDisplay)
 	case 14:
 	  cout << "Track " << iTrk << " using intersection " << fTracks[iTrk].GetIinterMwpc(0) << " on MWPC0 and intersection " << fTracks[iTrk].GetIinterMwpc(1) << " on MWPC1 and cluster " << fTracks[iTrk].GetIclNaI() << " on CB" << endl;
 	  break;
-	case 15: 
+	case 15:
 	  cout << "Track " << iTrk << " using cluster " << fTracks[iTrk].GetIhitPid() << " on PID and intersection " << fTracks[iTrk].GetIinterMwpc(0) << " on MWPC0 and intersection " << fTracks[iTrk].GetIinterMwpc(1) << " on MWPC1 and cluster " << fTracks[iTrk].GetIclNaI() << " on CB" << endl;
 	  break;
 	}
       }
     }
 
-    c->Update();     c->Modified();
-    c2->Update();    c2->Modified();
-    c3->Update();    c3->Modified();
+    c->Update(); c->Modified();
+    c2->Update(); c2->Modified();
+    c3->Update(); c3->Modified();
 
-    h->Delete();     h2->Delete();    h3->Delete();
+    c->cd();
+    if (fFit) {
+      for (int j=0; j<3; j++) {
+	TMarker *mm[3];
+	for (int j=0; j<3; j++) {
+	  mm[j] = new TMarker(xnew[j], ynew[j], 30);
+	  mm[j]->SetMarkerColor(kViolet+3);
+	  mm[j]->Draw("same");
+	}
+	TLine *lm = new TLine(xnew[0], ynew[0], xnew[2], ynew[2]);
+	lm->SetLineColor(kViolet); lm->Draw("same");
+      }
+    }
+
+    c->Update();     c->Modified();
+
+    h->Delete(); h2->Delete(); h3->Delete();
   }
   
-//   fWait = fNhitsPid ==2 && fNclNaI == 2 && fMwpc->GetNtracks() == 2;//fTracksTrueMwpc->size() > 0;
-//   fWait = fMwpc->GetNtracks() == 2;
-//      fWait = fNintersTrueMwpc[1] == 2 && fNtracks == 2;
-//   fWait = gAN->GetNDAQEvent() == 3000;
-//   fWait = fNtracksSingleMwpc > 0;
+  // fWait = fNhitsPid ==2 && fNclNaI == 2 && fMwpc->GetNtracks() == 2;//fTracksTrueMwpc->size() > 0;
+  // fWait = fMwpc->GetNtracks() == 2;
+  // fWait = fNintersTrueMwpc[1] == 2 && fNtracks == 2;
+  // fWait = gAN->GetNDAQEvent() == 3000;
+  // fWait = fNtracksSingleMwpc > 0;
 
   // Wait?
   if (fWait)
-  {
-    cout << endl;
-    cout << "Press any key to continue / q to quit " << endl;
-    if (cin.get()=='q') gROOT->ProcessLine(".q");
-  }
+    {
+      cout << endl;
+      cout << "Press any key to continue / q to quit " << endl;
+      if (cin.get()=='q') gROOT->ProcessLine(".q");
+    }
   
   // Reset fWait
   fWait = kFALSE;
@@ -1693,15 +1718,15 @@ void TA2CentralApparatus::InitGeometry()
   TMarker *origin = new TMarker(0., 0., 5);
   origin->Draw("same");
     
-  // CB  
+  // CB
   TArc *cbInn = new TArc(0.,0., innerCB);
   cbInn->SetLineColor(kGreen);
   cbInn->SetFillStyle(0);
   cbInn->Draw("same");
-  //   TArc *cbOut = new TArc(0.,0., outerCB);
-  //   cbOut->SetLineColor(kGreen);
-  //   cbOut->SetFillStyle(0);
-  //   cbOut->Draw("same");
+  // TArc *cbOut = new TArc(0.,0., outerCB);
+  // cbOut->SetLineColor(kGreen);
+  // cbOut->SetFillStyle(0);
+  // cbOut->Draw("same");
     
   TVector2 dCB[32], uCB[32];
   for (int i=0; i<32; i++) {
@@ -1720,7 +1745,7 @@ void TA2CentralApparatus::InitGeometry()
       Double_t x[5] = {dCB[i-1].X(), uCB[i-1].X(), uCB[i].X(), dCB[i].X(), dCB[i-1].X()};
       Double_t y[5] = {dCB[i-1].Y(), uCB[i-1].Y(), uCB[i].Y(), dCB[i].Y(), dCB[i-1].Y()};
       xCB[0][i] = dCB[i-1].X(); xCB[1][i] = uCB[i-1].X(); xCB[2][i] = uCB[i].X(); xCB[3][i] = dCB[i].X(); xCB[4][i] = dCB[i-1].X();
-      yCB[0][i] = dCB[i-1].Y(); yCB[1][i] = uCB[i-1].Y(); yCB[2][i] = uCB[i].Y(); yCB[3][i] = dCB[i].Y(); yCB[4][i] = dCB[i-1].Y(); 
+      yCB[0][i] = dCB[i-1].Y(); yCB[1][i] = uCB[i-1].Y(); yCB[2][i] = uCB[i].Y(); yCB[3][i] = dCB[i].Y(); yCB[4][i] = dCB[i-1].Y();
       contourCB[i] = new TPolyLine(5, x, y);
       contourCB[i]->SetLineColor(kGreen);
       contourCB[i]->SetFillStyle(0);
@@ -1773,20 +1798,20 @@ void TA2CentralApparatus::InitGeometry()
   h2->Draw();
 
   // CB
-  //   TArc *cbOut_yz = new TArc(0., 0., outerCB_yz, thetaMinCB, thetaMaxCB);
-  //   cbOut_yz->SetLineColor(kGreen);
-  //   cbOut_yz->SetFillStyle(0);
-  //   cbOut_yz->Draw("same");
+  // TArc *cbOut_yz = new TArc(0., 0., outerCB_yz, thetaMinCB, thetaMaxCB);
+  // cbOut_yz->SetLineColor(kGreen);
+  // cbOut_yz->SetFillStyle(0);
+  // cbOut_yz->Draw("same");
   TArc * cbInn_yz = new TArc(0., 0., innerCB, thetaMinCB, thetaMaxCB);
   cbInn_yz->SetLineColor(kGreen);
   cbInn_yz->SetFillStyle(0);
   cbInn_yz->SetNoEdges();
   cbInn_yz->Draw("same");
 
-  //   TArc *cbOut2_yz = new TArc(0., 0., outerCB_yz, -thetaMinCB, -thetaMaxCB);
-  //   cbOut2_yz->SetLineColor(kGreen);
-  //   cbOut2_yz->SetFillStyle(0);
-  //   cbOut2_yz->Draw("same");
+  // TArc *cbOut2_yz = new TArc(0., 0., outerCB_yz, -thetaMinCB, -thetaMaxCB);
+  // cbOut2_yz->SetLineColor(kGreen);
+  // cbOut2_yz->SetFillStyle(0);
+  // cbOut2_yz->Draw("same");
   TArc * cbInn2_yz = new TArc(0., 0., innerCB, -thetaMinCB, -thetaMaxCB);
   cbInn2_yz->SetLineColor(kGreen);
   cbInn2_yz->SetFillStyle(0);
@@ -1809,10 +1834,10 @@ void TA2CentralApparatus::InitGeometry()
     if (i>0) {
       Double_t z_yz[5] = {dCB_yz[i-1].X(), uCB_yz[i-1].X(), uCB_yz[i].X(), dCB_yz[i].X(), dCB_yz[i-1].X()};
       Double_t y_yz[5] = {dCB_yz[i-1].Y(), uCB_yz[i-1].Y(), uCB_yz[i].Y(), dCB_yz[i].Y(), dCB_yz[i-1].Y()};
-      zCB_yz[0][i] = z_yz[0];       zCB_yz[1][i] = z_yz[1];       zCB_yz[2][i] = z_yz[2]; 
-      zCB_yz[3][i] = z_yz[3];       zCB_yz[4][i] = z_yz[4]; 
-      yCB_yz[0][i] = y_yz[0];       yCB_yz[1][i] = y_yz[1];       yCB_yz[2][i] = y_yz[2];      
-      yCB_yz[3][i] = y_yz[3];       yCB_yz[4][i] = y_yz[4];
+      zCB_yz[0][i] = z_yz[0]; zCB_yz[1][i] = z_yz[1]; zCB_yz[2][i] = z_yz[2];
+      zCB_yz[3][i] = z_yz[3]; zCB_yz[4][i] = z_yz[4];
+      yCB_yz[0][i] = y_yz[0]; yCB_yz[1][i] = y_yz[1]; yCB_yz[2][i] = y_yz[2];
+      yCB_yz[3][i] = y_yz[3]; yCB_yz[4][i] = y_yz[4];
       contourCB_yz[i] = new TPolyLine(5, z_yz, y_yz);
       contourCB_yz[i]->SetLineColor(kGreen);
       contourCB_yz[i]->SetFillStyle(0);
@@ -1820,8 +1845,8 @@ void TA2CentralApparatus::InitGeometry()
       contourCB_yz[i]->Draw("same");
 
       Double_t y2_yz[5] = {-dCB_yz[i-1].Y(), -uCB_yz[i-1].Y(), -uCB_yz[i].Y(), -dCB_yz[i].Y(), -dCB_yz[i-1].Y()};
-      y2CB_yz[0][i] = y2_yz[0];       y2CB_yz[1][i] = y2_yz[1];       y2CB_yz[2][i] = y2_yz[2];
-      y2CB_yz[3][i] = y2_yz[3];       y2CB_yz[4][i] = y2_yz[4];
+      y2CB_yz[0][i] = y2_yz[0]; y2CB_yz[1][i] = y2_yz[1]; y2CB_yz[2][i] = y2_yz[2];
+      y2CB_yz[3][i] = y2_yz[3]; y2CB_yz[4][i] = y2_yz[4];
       contourCB2_yz[i] = new TPolyLine(5, z_yz, y2_yz);
       contourCB2_yz[i]->SetLineColor(kGreen);
       contourCB2_yz[i]->SetFillStyle(0);
@@ -1888,10 +1913,10 @@ void TA2CentralApparatus::InitGeometry()
   cbInn_xz->SetNoEdges();
   cbInn_xz->Draw("same");
 
-  //   TArc *cbOut2_xz = new TArc(0., 0., outerCB_xz, -thetaMinCB, -thetaMaxCB);
-  //   cbOut2_xz->SetLineColor(kGreen);
-  //   cbOut2_xz->SetFillStyle(0);
-  //   cbOut2_xz->Draw("same");
+  // TArc *cbOut2_xz = new TArc(0., 0., outerCB_xz, -thetaMinCB, -thetaMaxCB);
+  // cbOut2_xz->SetLineColor(kGreen);
+  // cbOut2_xz->SetFillStyle(0);
+  // cbOut2_xz->Draw("same");
   TArc * cbInn2_xz = new TArc(0., 0., innerCB, -thetaMinCB, -thetaMaxCB);
   cbInn2_xz->SetLineColor(kGreen);
   cbInn2_xz->SetFillStyle(0);
@@ -1914,10 +1939,10 @@ void TA2CentralApparatus::InitGeometry()
     if (i>0) {
       Double_t z_xz[5] = {dCB_xz[i-1].X(), uCB_xz[i-1].X(), uCB_xz[i].X(), dCB_xz[i].X(), dCB_xz[i-1].X()};
       Double_t x_xz[5] = {dCB_xz[i-1].Y(), uCB_xz[i-1].Y(), uCB_xz[i].Y(), dCB_xz[i].Y(), dCB_xz[i-1].Y()};
-      zCB_xz[0][i] = z_xz[0];       zCB_xz[1][i] = z_xz[1];       zCB_xz[2][i] = z_xz[2]; 
-      zCB_xz[3][i] = z_xz[3];       zCB_xz[4][i] = z_xz[4]; 
-      xCB_xz[0][i] = x_xz[0];       xCB_xz[1][i] = x_xz[1];       xCB_xz[2][i] = x_xz[2];      
-      xCB_xz[3][i] = x_xz[3];       xCB_xz[4][i] = x_xz[4];
+      zCB_xz[0][i] = z_xz[0]; zCB_xz[1][i] = z_xz[1]; zCB_xz[2][i] = z_xz[2];
+      zCB_xz[3][i] = z_xz[3]; zCB_xz[4][i] = z_xz[4];
+      xCB_xz[0][i] = x_xz[0]; xCB_xz[1][i] = x_xz[1]; xCB_xz[2][i] = x_xz[2];
+      xCB_xz[3][i] = x_xz[3]; xCB_xz[4][i] = x_xz[4];
       contourCB_xz[i] = new TPolyLine(5, z_xz, x_xz);
       contourCB_xz[i]->SetLineColor(kGreen);
       contourCB_xz[i]->SetFillStyle(0);
@@ -1925,8 +1950,8 @@ void TA2CentralApparatus::InitGeometry()
       contourCB_xz[i]->Draw("same");
 
       Double_t x2_xz[5] = {-dCB_xz[i-1].Y(), -uCB_xz[i-1].Y(), -uCB_xz[i].Y(), -dCB_xz[i].Y(), -dCB_xz[i-1].Y()};
-      x2CB_xz[0][i] = x2_xz[0];       x2CB_xz[1][i] = x2_xz[1];       x2CB_xz[2][i] = x2_xz[2];
-      x2CB_xz[3][i] = x2_xz[3];       x2CB_xz[4][i] = x2_xz[4];
+      x2CB_xz[0][i] = x2_xz[0]; x2CB_xz[1][i] = x2_xz[1]; x2CB_xz[2][i] = x2_xz[2];
+      x2CB_xz[3][i] = x2_xz[3]; x2CB_xz[4][i] = x2_xz[4];
       contourCB2_xz[i] = new TPolyLine(5, z_xz, x2_xz);
       contourCB2_xz[i]->SetLineColor(kGreen);
       contourCB2_xz[i]->SetFillStyle(0);
@@ -1936,8 +1961,8 @@ void TA2CentralApparatus::InitGeometry()
   }
 
   // MWPC
-  //   Double_t xm[5] = {-MWPClength/2., -MWPClength/2., MWPClength/2., MWPClength/2., -MWPClength/2.};
-  //   Double_t ym[5] = {-fR[1], fR[1], fR[1], -fR[1], -fR[1]};
+  // Double_t xm[5] = {-MWPClength/2., -MWPClength/2., MWPClength/2., MWPClength/2., -MWPClength/2.};
+  // Double_t ym[5] = {-fR[1], fR[1], fR[1], -fR[1], -fR[1]};
   TPolyLine *mwpc_xz = new TPolyLine(5, xm, ym);
   mwpc_xz->SetFillStyle(0);
   mwpc_xz->SetLineColor(kBlue);
@@ -1952,8 +1977,8 @@ void TA2CentralApparatus::InitGeometry()
   mwpcdown_xz->Draw("same");
   
   // PID
-  //   Double_t xp[5] = {-PIDlength/2., -PIDlength/2., PIDlength/2., PIDlength/2., -PIDlength/2.};
-  //   Double_t yp[5] = {-outerPID, outerPID, outerPID, -outerPID, -outerPID};
+  // Double_t xp[5] = {-PIDlength/2., -PIDlength/2., PIDlength/2., PIDlength/2., -PIDlength/2.};
+  // Double_t yp[5] = {-outerPID, outerPID, outerPID, -outerPID, -outerPID};
   TPolyLine *pid_xz = new TPolyLine(5, xp, yp);
   pid_xz->SetFillStyle(0);
   pid_xz->Draw("same");
@@ -1965,8 +1990,8 @@ void TA2CentralApparatus::InitGeometry()
   piddown_xz->Draw("same");
 
   // target
-  //   Double_t xt[5] = {-targetLength/2., -targetLength/2., targetLength/2., targetLength/2., -targetLength/2.};
-  //   Double_t yt[5] = {-targetDiameter/2., targetDiameter/2., targetDiameter/2., -targetDiameter/2., -targetDiameter/2.};
+  // Double_t xt[5] = {-targetLength/2., -targetLength/2., targetLength/2., targetLength/2., -targetLength/2.};
+  // Double_t yt[5] = {-targetDiameter/2., targetDiameter/2., targetDiameter/2., -targetDiameter/2., -targetDiameter/2.};
   TPolyLine *target_xz = new TPolyLine(5, xt, yt);
   target_xz->SetLineColor(kRed);
   target_xz->SetFillColor(kRed);
@@ -2038,9 +2063,14 @@ void fcnStraightLine(Int_t &npar, Double_t *gin, Double_t &f, Double_t *par, Int
 //________________________________________________________________________________________
 void TA2CentralApparatus::SetupFitVector(Int_t n, Double_t *alpha, Double_t *R, TMatrixT<Double_t> &fitvect) {
 
+  fitvect.ResizeTo(n,3);
+  int counter = 0;
   for (int i=0; i<n; i++) {
-    fitvect[i][0] = alpha[i];
-    fitvect[i][2] = R[i];
-    fitvect[i][3] = 1./(TMath::Sqrt(3.)*R[i]);
+    fitvect[counter][0] = alpha[i];
+    fitvect[counter][1] = R[i];
+    fitvect[counter][2] = 1./(TMath::Sqrt(3.)*R[i]);
+    counter++;
   }
+  if (n != counter) 
+    fitvect.ResizeTo(counter,3);
 }
