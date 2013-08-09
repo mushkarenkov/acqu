@@ -73,9 +73,9 @@ TA2CylMwpc::TA2CylMwpc( const char* name, TA2System* apparatus ) : TA2WireChambe
   // Initial setting of local variables mostly set undefined
   
   // Test
-  fWait = kFALSE;
+  fWait        = kFALSE;
   fMwpcDisplay = kFALSE;
-  
+  fIfCalib     = kFALSE;
   // Geometrical consts
   fR = fRtE = fRtI = fC1 = fC2 = NULL;
   
@@ -412,7 +412,45 @@ void TA2CylMwpc::SetConfig( char* line, int key )
 	PrintError(line, "<Too many WC intersections input lines>", EErrFatal);
 	return;
       }
-      if( sscanf( line, "%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf",
+
+      // Susanna ---- init
+      if (fIfCalib) {
+	parfile.open("mwpc_params.dat");
+	cout << "Reading from mwpc_params.dat ..." << endl;
+	Double_t t0, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12, t13;
+	Double_t param[2][14];
+	for (int ii=0; ii<fNchamber; ii++) {
+	  parfile >> t0 >> t1 >> t2 >> t3 >> t4 >> t5 >> t6 >> t7 >> t8 >> t9 >> t10 >> t11 >> t12 >> t13;
+	  param[ii][0]  = t0;
+	  param[ii][1]  = t1;
+	  param[ii][2]  = t2;
+	  param[ii][3]  = t3;
+	  param[ii][4]  = t4;
+	  param[ii][5]  = t5;
+	  param[ii][6]  = t6;
+	  param[ii][7]  = t7;
+	  param[ii][8]  = t8;
+	  param[ii][9]  = t9;
+	  param[ii][10] = t10;
+	  param[ii][11] = t11;
+	  param[ii][12] = t12;
+	  param[ii][13] = t13;
+	}
+	parfile.close();
+	
+	for (int j=0; j<14; j++) 
+	  dparm[j] = param[nCh][j];
+
+	cout << "===> Parameters for MWPC-" << nCh << ":" << endl;
+	cout << param[nCh][0] << "\t" << param[nCh][1] << "\t" << param[nCh][2] << "\t" << param[nCh][3] << "\t" <<
+	  param[nCh][4] << "\t" << param[nCh][5] << "\t" << param[nCh][6] << "\t" << param[nCh][7] << "\t" << 
+	  param[nCh][8] << "\t" << param[nCh][9] << "\t" << param[nCh][10] << "\t" << param[nCh][11] << "\t" <<
+	  param[nCh][12] << "\t" << param[nCh][13] << endl;
+      } 
+      // Susanna --- end
+
+      else 	
+	if( sscanf( line, "%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf",
 	          dparm, dparm+1, dparm+2, dparm+3, dparm+4, dparm+5, dparm+6,
 		  dparm+7, dparm+8, dparm+9, dparm+10, dparm+11, dparm+12, dparm+13) < 6 ) goto error;
       fPhiCorrEI[0][nCh] = dparm[0]*kDegToRad;
