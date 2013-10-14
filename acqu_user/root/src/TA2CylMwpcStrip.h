@@ -1,4 +1,3 @@
-// SVN info: $Id: TA2CylMwpcStrip.h 121 2013-05-07 00:18:42Z mushkar $
 #ifndef __TA2CylMwpcStrip_h__
 #define __TA2CylMwpcStrip_h__
 

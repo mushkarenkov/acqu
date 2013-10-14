@@ -1,4 +1,3 @@
-// SVN info: $Id: TA2Math.h 116 2013-02-06 02:32:22Z mushkar $
 #ifndef __TA2Math_h__
 #define __TA2Math_h__
 

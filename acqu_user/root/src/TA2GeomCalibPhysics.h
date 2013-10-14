@@ -1,4 +1,3 @@
-// SVN info: $Id: TA2GeomCalibPhysics.h 124 2013-05-28 02:49:45Z mushkar $
 #ifndef __TA2GeomCalibPhysics_h__
 #define __TA2GeomCalibPhysics_h__
 

@@ -1,4 +1,3 @@
-// SVN info: $Id: TA2GeomCalibPhysics.cc 124 2013-05-28 02:49:45Z mushkar $
 #include <iostream>
 using namespace std;
 

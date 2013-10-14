@@ -1,4 +1,3 @@
-// SVN info: $Id: TA2CylMwpc.cc 124 2013-05-28 02:49:45Z mushkar $
 // ROOT
 // #include "TF1.h"
 #include "TCanvas.h"

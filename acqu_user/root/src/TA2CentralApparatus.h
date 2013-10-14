@@ -1,4 +1,3 @@
-// SVN: $Id: TA2CentralApparatus.h 122 2013-05-07 19:12:15Z mushkar $
 #ifndef __TA2CentralApparatus_h__
 #define __TA2CentralApparatus_h__
 
@@ -102,6 +101,7 @@ protected:
   Int_t			 *fIchTracks;
   Int_t			  fNneTracks;
   Int_t			 *fIneTracks;
+  // TODO All map should be probably changed to multimap
   // Tracks with 2 MWPC
   map<Double_t,pair<Int_t,Int_t> > fMapMwpcTrueTrackNaI;          // sorted array of all possible Mwpc true track & NaI cluster combinations
   map<Double_t,pair<Int_t,Int_t> > fMapMwpcTrueCandidateTrackNaI; // sorted array of all possible Mwpc true-candidate track & NaI cluster combinations
@@ -193,15 +193,13 @@ protected:
    
 public:
   virtual void	 AddParticleInfo(const TA2CentralTrack&);
+  TA2Particle*   GetParticles() { return fParticleInfo; }
+  TA2Particle    GetParticles(Int_t index) { return fParticleInfo[index]; }
   
 // Display
 public:
   Bool_t fDisplay;
   void InitGeometry();
-
-	TA2Particle* GetParticles() { return fParticleInfo; }
-	TA2Particle GetParticles(Int_t index){ return fParticleInfo[index]; }
-
 private:
   TCanvas *c, *c2, *c3;
   TH2F *h, *h2, *h3;
@@ -209,7 +207,6 @@ private:
   Double_t xCB[5][32], yCB[5][32];
   Double_t zCB_yz[5][13], yCB_yz[5][13], y2CB_yz[5][13];
   Double_t zCB_xz[5][13], xCB_xz[5][13], x2CB_xz[5][13];
-  
 
 //
 public:
@@ -223,8 +220,6 @@ public:
   virtual void		  Cleanup();			// reset event
   virtual void		  DeleteArrays();		// flush local new store
   virtual void		  MarkEndBuffers();		// Mark EndBuffer for the output arrays
-  
-  Int_t GetNparticle(){ return fNparticle; } // must be public, but actually base class has such a function
   
   ClassDef(TA2CentralApparatus,1) // Central detector tracks reconstruction (PID+MWPC+CB)
 };

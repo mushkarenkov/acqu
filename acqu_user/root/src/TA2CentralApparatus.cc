@@ -1,4 +1,3 @@
-// SVN info: $Id: TA2CentralApparatus.cc 122 2013-05-07 19:12:15Z mushkar $
 // ROOT
 #include "TF1.h"
 #include "TCanvas.h"

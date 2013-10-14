@@ -1,4 +1,3 @@
-// SVN info: $Id: TA2TrackLine.cc 116 2013-02-06 02:32:22Z mushkar $
 #include "TA2TrackLine.h"
 
 ClassImp(TA2TrackLine)

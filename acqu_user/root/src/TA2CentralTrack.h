@@ -1,4 +1,3 @@
-// SVN info: $Id: TA2CentralTrack.h 119 2013-03-11 11:45:08Z mushkar $
 #ifndef __TA2CentralTrack_h__
 #define __TA2CentralTrack_h__
 

@@ -1,4 +1,3 @@
-// SVN info: $Id: TA2CylMwpcLayer.cc 116 2013-02-06 02:32:22Z mushkar $
 #include "TA2CylMwpcLayer.h"
 #include "TA2WireChamber.h"
 

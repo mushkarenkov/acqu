@@ -1,4 +1,3 @@
-// SVN info: $Id: TA2MwpcTrack.cc 116 2013-02-06 02:32:22Z mushkar $
 #include "TA2MwpcTrack.h"
 
 ClassImp(TA2MwpcTrack)

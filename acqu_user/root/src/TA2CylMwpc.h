@@ -1,4 +1,3 @@
-// SVN info: $Id: TA2CylMwpc.h 124 2013-05-28 02:49:45Z mushkar $
 #ifndef __TA2CylMwpc_h__
 #define __TA2CylMwpc_h__
 
@@ -158,6 +157,7 @@ public:
   
 // Tracks
 protected:
+  // TODO All map<> should be changed to multimap<>
   TA2MwpcTrack *fTracks;			// all possible tracks
   Int_t fNtracksTrue;				// # of possible true tracks
   map<Double_t,Int_t> fTracksTrue;		// sorted array of the possible true tracks

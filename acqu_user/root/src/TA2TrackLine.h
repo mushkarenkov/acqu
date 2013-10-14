@@ -1,4 +1,3 @@
-// SVN info: $Id: TA2TrackLine.h 116 2013-02-06 02:32:22Z mushkar $
 #ifndef __TA2TrackLine_h__
 #define __TA2TrackLine_h__
 
