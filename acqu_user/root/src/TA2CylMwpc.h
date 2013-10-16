@@ -14,6 +14,7 @@ using std::make_pair;
 using std::cout;
 using std::cin;
 using std::endl;
+#include <fstream>
 
 // ROOT
 #include <TGraph2D.h>
@@ -38,6 +39,10 @@ private:
   TCanvas *c, *c2;
   TH2F * h, *h2;
   Bool_t fMwpcDisplay;
+
+// automatic procedure for MWPC calibration
+  Bool_t fIfCalib;
+  ifstream parfile;
 
 protected:
   // Geometrical constants

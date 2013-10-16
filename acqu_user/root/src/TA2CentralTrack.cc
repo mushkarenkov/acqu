@@ -1,4 +1,3 @@
-
 #include "TA2CentralTrack.h"
 
 ClassImp(TA2CentralTrack)

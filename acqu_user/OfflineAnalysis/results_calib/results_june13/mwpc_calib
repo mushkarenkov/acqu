@@ -1,0 +1,21 @@
+root -l -b -q Write_StartingPar.C
+AcquRoot Config_Offline/CalibMay13.Offline
+root -l -b -q Add_Rootfiles.C
+root -l -b -q Automatic_Calibration.C"(0)"
+AcquRoot Config_Offline/CalibMay13.Offline
+root -l -b -q Add_Rootfiles.C
+root -l -b -q Automatic_Calibration.C"(1)"
+AcquRoot Config_Offline/CalibMay13.Offline
+root -l -b -q Add_Rootfiles.C
+root -l -b -q Automatic_Calibration.C"(2)"
+AcquRoot Config_Offline/CalibMay13.Offline
+root -l -b -q Add_Rootfiles.C
+root -l -b -q Automatic_Calibration.C"(3)"
+AcquRoot Config_Offline/CalibMay13.Offline
+root -l -b -q Add_Rootfiles.C
+root -l -b -q Automatic_Calibration.C"(4)"
+AcquRoot Config_Offline/CalibMay13.Offline
+root -l -b -q Add_Rootfiles.C
+root -l -b -q Automatic_Calibration.C"(5)"
+AcquRoot Config_Offline/CalibMay13.Offline
+root -l -b -q Add_Rootfiles.C
