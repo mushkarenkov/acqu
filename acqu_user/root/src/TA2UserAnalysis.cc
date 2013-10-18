@@ -35,23 +35,25 @@
 #include "TA2MyCaLib.h"
 #include "TA2MyClusterCalib.h"
 #include "TA2MyRateEstimation.h"
+#include "TA2GeomCalibPhysics.h"
 
 // Recognised apparatus classes.
 // The "standard" set is held in TA2Analysis
 enum { EA2Calorimeter,
        EA2Tagger,
-		 EA2CosmicCal,
+       EA2CosmicCal,
        EA2CrystalBall,
-		 EA2CB,
-		 EA2Taps,
+       EA2CB,
+       EA2Taps,
        EA2CentralApparatus,
-		 EA2GenericApp,
+       EA2GenericApp,
        EA2Physics,
-		 EA2UserPhysics,
-		 EA2MesonPhysics,
-		 EA2BasePhysics,
-		 EA2TriggerPhysics,
-	         EA2Pi0Compton,
+       EA2UserPhysics,
+       EA2MesonPhysics,
+       EA2BasePhysics,
+       EA2TriggerPhysics,
+       EA2GeomCalibPhysics,
+       EA2Pi0Compton,
        EA2MyCrystalBall, 
        EA2MyTAPS,
        EA2MyAnalysis, 
@@ -74,6 +76,7 @@ static const Map_t kKnownChild[] =
   {"TA2MyCrystalBall",    EA2MyCrystalBall},
   {"TA2MyTAPS",           EA2MyTAPS},
   //Physics
+  {"TA2GeomCalibPhysics", EA2GeomCalibPhysics},
   {"TA2Pi0Compton",       EA2Pi0Compton},
   {"TA2Physics",          EA2Physics},
   {"TA2UserPhysics",      EA2UserPhysics},
@@ -174,6 +177,9 @@ TA2DataManager* TA2UserAnalysis::CreateChild(const char* name, Int_t a)
   case EA2MyRateEstimation:
     // rate estimation
     return new TA2MyRateEstimation( name, this );
+  case EA2GeomCalibPhysics:
+    // Geometrical calibration for the TA2Mwpc and TA2CentralApparatus
+    return new TA2GeomCalibPhysics( name, this );
 
    default:
     PrintError((char*)name, "<Unknown apparatus..cannot continue>", EErrFatal);

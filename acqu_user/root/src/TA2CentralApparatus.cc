@@ -701,6 +701,8 @@ void TA2CentralApparatus::MakeTracksTrue(const map<Double_t,Int_t> *tracksMwpc, 
 	  if (IsUsedClNaI(iClNaI)) continue; // check if the clNaI was used already
 
 	  // Susanna - begin
+	  if (0)
+	  {
 	  Double_t x0 = fMwpc->GetInters(0,fTracksMwpc[iTrMwpc].GetIinter(0))->GetPosition()->X();
 	  Double_t y0 = fMwpc->GetInters(0,fTracksMwpc[iTrMwpc].GetIinter(0))->GetPosition()->Y();
 	  Double_t x1 = fMwpc->GetInters(1,fTracksMwpc[iTrMwpc].GetIinter(1))->GetPosition()->X();
@@ -720,11 +722,13 @@ void TA2CentralApparatus::MakeTracksTrue(const map<Double_t,Int_t> *tracksMwpc, 
 	    cout << "****** UNSUCCESSFUL FIT :( ******" << endl;
 	  else 
 	    cout << "****** SUCCESSFUL FIT!!! Fit parameters are: " << pfit[0] << " and " << pfit[1]*kRadToDeg << endl;
-	  for (int j=0; j<dim; j++) {
+	  for (int j=0; j<dim; j++)
+	  {
 	    alphanew[j] = pfit[1] + TMath::ASin(pfit[0]/radii[j]);
 	    xnew[j] = radii[j]*TMath::Cos(alphanew[j]);
 	    ynew[j] = radii[j]*TMath::Sin(alphanew[j]);
 	    cout << "Intersection " << j << " from new fit: (" << xnew[j] << ", " << ynew[j] << ")" << endl;
+	  }
 	  }
 	  // Susanna - end
 

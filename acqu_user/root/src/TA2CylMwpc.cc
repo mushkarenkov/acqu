@@ -74,7 +74,7 @@ TA2CylMwpc::TA2CylMwpc( const char* name, TA2System* apparatus ) : TA2WireChambe
   // Test
   fWait        = kFALSE;
   fMwpcDisplay = kFALSE;
-  fIfCalib     = kFALSE;
+  fIfCalib     = kTRUE; //kFALSE;
   // Geometrical consts
   fR = fRtE = fRtI = fC1 = fC2 = NULL;
   
