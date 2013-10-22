@@ -15,7 +15,7 @@ enum {
   EWCTypePlaneWire, EWCTypeCylWire, EWCTypePlaneDrift,
   EWCTypePlaneStrip, EWCTypeCylStrip, EWCIntersection,
   EWCSigmaZ, EWCSigmaPhi, EWCDetEff,
-  EWCReadGeneratedKinematics
+  EWCReadGeneratedKinematics, EWCCalib
 };
 
 // Command-line key words which determine what to read in
@@ -34,6 +34,7 @@ static const Map_t kWCKeys[] = {
   {"SigmaPhi:",		 EWCSigmaPhi},
   {"DetEff:",		 EWCDetEff},
   {"ReadGeneratedKinematics:",	EWCReadGeneratedKinematics},
+  {"Calib:",		 EWCCalib},
   {NULL,                 -1}
   };
   
@@ -74,7 +75,7 @@ TA2CylMwpc::TA2CylMwpc( const char* name, TA2System* apparatus ) : TA2WireChambe
   // Test
   fWait        = kFALSE;
   fMwpcDisplay = kFALSE;
-  fIfCalib     = kTRUE; //kFALSE;
+  fIfCalib     = kFALSE;
   // Geometrical consts
   fR = fRtE = fRtI = fC1 = fC2 = NULL;
   
@@ -402,6 +403,9 @@ void TA2CylMwpc::SetConfig( char* line, int key )
 	fWCLayer[fNlayer] = new TA2CylMwpcStrip( name, nelem, maxcl, maxclsize, this, dparm );
 	fNlayer++;
 	break;
+    case EWCCalib:
+      fIfCalib = kTRUE;
+      break;
     case EWCIntersection:
       // Parameters for intersections
       static Int_t nCh = 0;

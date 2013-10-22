@@ -61,7 +61,7 @@ void CalibMwpcNaI(const Int_t ii, const Int_t opt, Int_t niter)
       h1[ii]->Fit("gaus","","",bincenter-0.5*rms, bincenter+0.5*rms);
       Double_t parfitMwpcNaI[fNch][3];
       gaus->GetParameters(parfitMwpcNaI[ii]);
-      mwpc_params[ii][3] = parfitMwpcNaI[ii][1];
+      mwpc_params[ii][3] += parfitMwpcNaI[ii][1];
       break;
     case 2:
       // dZ vs Zinter
