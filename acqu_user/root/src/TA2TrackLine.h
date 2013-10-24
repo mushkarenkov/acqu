@@ -36,7 +36,8 @@ class TA2TrackLine : public TObject {
     Double_t Angle(const TA2TrackLine &tr) const;
     Double_t Angle(const TA2TrackLine *tr) const { return Angle(*tr); }
     Double_t Angle(const TVector2 &v) const;
-    TVector3 Vertex(const TA2TrackLine&, Double_t dist = 0.) const;
+    TVector3 Vertex(const TA2TrackLine&) const;
+    TVector3 Vertex(const TA2TrackLine&, Double_t &dist) const;
     
     ClassDef(TA2TrackLine,1) // Particle track line
 };
@@ -81,7 +82,15 @@ inline Double_t TA2TrackLine::Angle(const TVector2 &v) const
 }
 
 //_________________________________________________________________________________________
-inline TVector3 TA2TrackLine::Vertex(const TA2TrackLine &tr, Double_t dist) const
+inline TVector3 TA2TrackLine::Vertex(const TA2TrackLine &tr) const
+{
+  //
+  Double_t dist = -1000.;
+  return TA2Math::Vertex(fOrigin, fDirCos, tr.GetOrigin(), tr.GetDirCos(), dist);
+}
+
+//_________________________________________________________________________________________
+inline TVector3 TA2TrackLine::Vertex(const TA2TrackLine &tr, Double_t &dist) const
 {
   //
   return TA2Math::Vertex(fOrigin, fDirCos, tr.GetOrigin(), tr.GetDirCos(), dist);

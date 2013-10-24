@@ -48,7 +48,7 @@ namespace TA2Math {
   
   //_________________________________________________________________________________________________
   // Calculate vertex for 2 lines (see DistanceBetweenTwoLines(..))
-  inline TVector3 Vertex(const TVector3 &o1, const TVector3 &d1, const TVector3 &o2, const TVector3 &d2, Double_t distance = 0.)
+  inline TVector3 Vertex(const TVector3 &o1, const TVector3 &d1, const TVector3 &o2, const TVector3 &d2, Double_t &distance)
   {
     // The shortest distance beetween the 2 lines
     TVector3 r1, r2;
