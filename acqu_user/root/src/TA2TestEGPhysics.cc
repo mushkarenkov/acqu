@@ -628,6 +628,9 @@ void TA2TestEGPhysics::Reconstruct()
 //   ReconstructPi0();
   
   MarkEndBuffer();
+  
+  //
+  fCB->Test(1);
 }
 
 //_____________________________________________________________________________________

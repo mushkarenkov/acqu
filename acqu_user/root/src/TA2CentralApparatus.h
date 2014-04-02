@@ -24,8 +24,6 @@ class TA2CentralTrack;
 class TA2MwpcTrack;
 class TA2Particle;
 
-void fcnStraightLine(Int_t &, Double_t *, Double_t &, Double_t*, Int_t); 
-
 class TA2CentralApparatus : public TA2Apparatus {
 public:
   Bool_t fWait;
@@ -95,11 +93,6 @@ public:
   virtual Double_t CalcEtrackMwpc(const Int_t, const Int_t) const;
   virtual Double_t CalcEclNaI(const Int_t) const;
 
-  // Minuit stuff
-  Int_t MinuitFit(Int_t, Double_t*, Double_t*, Double_t*, Double_t[2]);
-  void SetupFitVector(Int_t, Double_t*, Double_t*, TMatrixT<Double_t>&);
-  Int_t fFit;
-  
 // Tracks
 protected:
   Int_t		   fNtracks;
@@ -346,30 +339,6 @@ inline void TA2CentralApparatus::MarkEndBuffers()
   fVertR[fNvertexes] = EBufferEnd;
   fTrackDist[fNvertexes] = EBufferEnd;
 }
-
-      // //_________________________________________________________________________________
-      // inline Double_t TA2CentralApparatus::GetCBMeanTime()
-      // {
-// Double_t time = 0.0;
-// Int_t counter = 0;
-// UInt_t* id_clCal = fNaI->GetClustHit(); //Indices of hit clusters
-// HitCluster_t** clCal = fNaI->GetCluster(); //Pointer to cluster structs
-// HitCluster_t* cl; //Cluster struct
-//
-// for(Int_t i = 0; i<fNparticle; i++)
-// {
-// if(fPDG_ID[i]==kGamma)
-// {
-// cl = clCal[id_clCal[i]];
-// time = time + cl->GetTime();
-// counter++;
-// }
-// }
-// if(counter==0)
-// return 0.0;
-// else
-// return (time/counter);
-// }
 
 
 #endif
