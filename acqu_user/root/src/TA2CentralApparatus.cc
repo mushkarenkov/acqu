@@ -1059,21 +1059,14 @@ void TA2CentralApparatus::AddTrack(const Int_t iHitPid, const Int_t iInterMwpc0,
   }
   // Set MWPC info
   if (track.HasMwpc())
-<<<<<<< HEAD
-    {
-      track.SetEtrackMwpc(CalcEtrackMwpc(iInterMwpc0,iInterMwpc1));
-      // track.SetTtrackMwpc(); // TODO
-    }
-=======
   {
     track.SetEtrackMwpc0(CalcEtrackMwpcInd(iInterMwpc0,0));	//single MWPC energy (0)
     track.SetEtrackMwpc1(CalcEtrackMwpcInd(iInterMwpc1,1));	//single MWPC energy (1)    
-    track.SetEtrackMwpc(CalcEtrackMwpc(iInterMwpc0,iInterMwpc1)); // Sum of MWPC energies
+    track.SetEtrackMwpc(CalcEtrackMwpc(iInterMwpc0,iInterMwpc1)); // (e1+e2)/2 or e1(2) in case of a single mwpc track
     
     //   track.SetTtrackMwpc(); // TODO
   }
   
->>>>>>> A2-Collaboration-master
   // Set NaI info
   if (track.HasNaI())
   {
@@ -1195,18 +1188,15 @@ void TA2CentralApparatus::AddParticleInfo(const TA2CentralTrack &track)
   fParticleInfo[fNparticle].SetVetoEnergy(track.GetEhitPidCorr());
   if (track.HasPid()) fParticleInfo[fNparticle].SetVetoIndex(fHitsPid[track.GetIhitPid()]);
   fParticleInfo[fNparticle].SetDetectorA( fDet[fNparticle] - fParticleInfo[fNparticle].GetDetectors() );
-<<<<<<< HEAD
 //  fParticleInfo[fNparticle].SetIintersMwpc(track.GetIinterMwpc(0),track.GetIinterMwpc(1));
 //  fParticleInfo[fNparticle].SetEtrackMwpc(track.GetEtrackMwpc());
 //  fParticleInfo[fNparticle].SetTtrackMwpc(track.GetTtrackMwpc());
-=======
   fParticleInfo[fNparticle].SetTrackIntersects(track.GetIinterMwpc(0),track.GetIinterMwpc(1));
   fParticleInfo[fNparticle].SetTrackEnergy(track.GetEtrackMwpc());
   fParticleInfo[fNparticle].SetEnergyMwpc0(track.GetEtrackMwpc0());  
   fParticleInfo[fNparticle].SetEnergyMwpc1(track.GetEtrackMwpc1());
   fParticleInfo[fNparticle].SetPsVertex(track.GetPsVertex()); 
   fParticleInfo[fNparticle].SetTrackTime(track.GetTtrackMwpc());
->>>>>>> A2-Collaboration-master
   
   ++fNparticle;
   

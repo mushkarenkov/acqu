@@ -72,7 +72,6 @@ class TA2CentralTrack : public TA2TrackLine {
     const Int_t *GetIintersMwpc() const { return fIintersMwpc; }
     Double_t GetEtrackMwpc() const { return fEtrackMwpc; }
     Double_t GetEtrackMwpcCorr() const { return fEtrackMwpcCorr; }
-    Double_t GetEtrackMwpc()  const { return fEtrackMwpc; }
     Double_t GetEtrackMwpc0() const { return fEtrackMwpc0; }
     Double_t GetEtrackMwpc1() const { return fEtrackMwpc1; }
     Double_t GetTtrackMwpc() const { return fTtrackMwpc; }
