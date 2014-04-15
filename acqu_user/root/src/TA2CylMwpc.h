@@ -40,10 +40,6 @@ private:
   TH2F * h, *h2;
   Bool_t fMwpcDisplay;
 
-// automatic procedure for MWPC calibration
-  Bool_t fIfCalib;
-  ifstream parfile;
-
 protected:
   // Geometrical constants
   Double_t	*fR;	// chamber wire radii

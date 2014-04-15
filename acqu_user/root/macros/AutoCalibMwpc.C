@@ -207,9 +207,9 @@ void SliceH2(
 
 
 // ===============================================
-void Automatic_Calibration(Int_t niter) {
+void AutoCalibMwpc(Int_t niter) {
 
-  cout << "Running Automatic_Calibration.C -- iteration " << niter << endl;
+  cout << "Running AutoCalibMwpc.C -- iteration " << niter << endl;
   for (int i=0; i<fNch; i++) 
     for (int ii=0; ii<14; ii++) 
       mwpc_params[i][ii] = 0.;
@@ -280,4 +280,3 @@ void Automatic_Calibration(Int_t niter) {
   InputFile->Close();
 
 }
-      

@@ -693,15 +693,18 @@ void TA2GeomCalibPhysics::MarkEndBuffers()
   // Mark end buffers for arrays
   
   // E-IW
-  for (Int_t i=0; i<kNch; ++i)
+  if (fMwpc)
   {
-    fPhiInters[i][fNintersTrue[i]] = EBufferEnd;
-    fZinters[i][fNintersTrue[i]]   = EBufferEnd;
-    fDphiEI[i][fNintersTrue[i]]    = EBufferEnd;
-    fCGclI[i][fNintersTrue[i]]     = EBufferEnd;
-    fCGclW[i][fNintersTrue[i]]     = EBufferEnd;
-    fCGclE[i][fNintersTrue[i]]     = EBufferEnd;
-    fPhiEI[i][fNintersTrue[i]]     = EBufferEnd;
+    for (Int_t i=0; i<kNch; ++i)
+    {
+      fPhiInters[i][fNintersTrue[i]] = EBufferEnd;
+      fZinters[i][fNintersTrue[i]]   = EBufferEnd;
+      fDphiEI[i][fNintersTrue[i]]    = EBufferEnd;
+      fCGclI[i][fNintersTrue[i]]     = EBufferEnd;
+      fCGclW[i][fNintersTrue[i]]     = EBufferEnd;
+      fCGclE[i][fNintersTrue[i]]     = EBufferEnd;
+      fPhiEI[i][fNintersTrue[i]]     = EBufferEnd;
+    }
   }
   
 }
