@@ -51,3 +51,8 @@ do
   echo >> ${mwpc_setup}
   echo "END" >> ${mwpc_setup}
 done
+
+#_______________________________________________________________________
+# Calibrated result
+out=./out/$outdir/calibrated
+run_AcquRoot . $acqusetup $out $nproc

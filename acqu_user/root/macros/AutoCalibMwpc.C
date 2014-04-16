@@ -32,7 +32,7 @@ void CalibEI(const Int_t ii)
   Double_t parfitEI[fNch][3];
   gaus->GetParameters(parfitEI[ii]);
   if (parfitEI[ii][1]>parfitEI[ii][2])
-    mwpc_params[ii][0] = parfitEI[ii][1];  
+    mwpc_params[ii][0] += parfitEI[ii][1];  
 }
 
 
