@@ -29,10 +29,9 @@ void CalibEI(const Int_t ii)
   Double_t bincenter = h1[ii]->GetBinCenter(binmax);
   Double_t rms = h1[ii]->GetRMS();
   h1[ii]->Fit("gaus","","", bincenter-0.2*rms, bincenter+0.3*rms);
-  Double_t parfitEI[fNch][3];
-  gaus->GetParameters(parfitEI[ii]);
-  if (parfitEI[ii][1]>parfitEI[ii][2])
-    mwpc_params[ii][0] += parfitEI[ii][1];  
+  Double_t mean = gaus->GetParameter(1);
+  Double_t errmean = gaus->GetParError(1);
+  if (mean > errmean) mwpc_params[ii][0] += mean;
 }
 
 
@@ -66,7 +65,7 @@ void CalibMwpcNaI(const Int_t ii, const Int_t opt, Int_t niter)
     case 2:
       // dZ vs Zinter
       h2[ii] = (TH2D*)gDirectory->Get("GeomCalib_DzInterMwpc"+i+"NaI_v_ZinterMwpc"+i+"NaI");
-      SliceH2(h2[ii],"y",20,-50.,50.,1.,grMean[ii],grSigma[ii]);
+      SliceH2(h2[ii],"y",20,-50.,50.,grMean[ii],grSigma[ii]);
       grMean[ii]->Fit("pol1","","",-280.,280.);
       Double_t parfitMwpcNaI2[fNch][2];
       pol1->GetParameters(parfitMwpcNaI2[ii]);
@@ -107,7 +106,7 @@ void CalibMwpc(const Int_t opt) {
     case 2:
       // dZ vs Zinter
       h2 = (TH2D*)gDirectory->Get("GeomCalib_DzInterMwpc1_v_ZinterMwpc1");
-      SliceH2(h2,"y",20,-10.,10.,1.,grMean,grSigma);
+      SliceH2(h2,"y",20,-10.,10.,grMean,grSigma);
       grMean->Fit("pol1");
       Double_t parfitMwpc2[2];
       pol1->GetParameters(parfitMwpc2);
@@ -121,7 +120,7 @@ void CalibMwpc(const Int_t opt) {
 // ===============================================
 void SliceH2(
   // input
-  const TH2 *h, const TString &axis, const Int_t n, Double_t fitMin, Double_t fitMax, const Double_t &factorSigma,
+  const TH2 *h, const TString &axis, const Int_t n, Double_t fitMin, Double_t fitMax,
   // output
   TGraphErrors &*grMean, TGraphErrors &*grSigma)
 {
@@ -184,8 +183,8 @@ void SliceH2(
     if ( hTmp->GetFunction("gaus") )
     {
       x[nPoints] = xTmp;
-      sigma[nPoints]    = hTmp->GetFunction("gaus")->GetParameter(2)/factorSigma;
-      errSigma[nPoints] = hTmp->GetFunction("gaus")->GetParError(2)/factorSigma;
+      sigma[nPoints]    = hTmp->GetFunction("gaus")->GetParameter(2);
+      errSigma[nPoints] = hTmp->GetFunction("gaus")->GetParError(2);
       mean[nPoints]     = hTmp->GetFunction("gaus")->GetParameter(1);
       errMean[nPoints]  = hTmp->GetFunction("gaus")->GetParError(1);
       if ( errSigma[nPoints] < 99999.9 ) ++nPoints;
