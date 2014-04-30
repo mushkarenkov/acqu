@@ -56,3 +56,4 @@ done
 # Calibrated result
 out=./out/$outdir/calibrated
 run_AcquRoot . $acqusetup $out $nproc
+hadd -f nsummed.root $out/*_hist.root

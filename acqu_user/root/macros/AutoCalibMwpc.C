@@ -31,7 +31,7 @@ void CalibEI(const Int_t ii)
   h1[ii]->Fit("gaus","","", bincenter-0.2*rms, bincenter+0.3*rms);
   Double_t mean = gaus->GetParameter(1);
   Double_t errmean = gaus->GetParError(1);
-  if (mean > errmean) mwpc_params[ii][0] += mean;
+  if (TMath::Abs(mean) > errmean) mwpc_params[ii][0] += mean;
 }
 
 
