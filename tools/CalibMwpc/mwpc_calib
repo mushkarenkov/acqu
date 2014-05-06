@@ -24,6 +24,7 @@ runCalib()
   run_AcquRoot . $acqusetup $out $nproc
   hadd -f nsummed.root $out/*_hist.root
   root -l -b -q AutoCalibMwpc.C"($1)" # creates a new mwpc_params.dat
+  mv nsummed.root $out/
 }
 
 #_______________________________________________________________________
@@ -56,4 +57,5 @@ done
 # Calibrated result
 out=./out/$outdir/calibrated
 run_AcquRoot . $acqusetup $out $nproc
-hadd -f nsummed.root $out/*_hist.root
+cd $out
+hadd -f nsummed.root *_hist.root
