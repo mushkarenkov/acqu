@@ -1,4 +1,3 @@
-// SVN info $Id$
 #include <iostream>
 #include <set>
 
@@ -630,7 +629,7 @@ void TA2TestEGPhysics::Reconstruct()
   MarkEndBuffer();
   
   //
-  fCB->Test(1);
+//   fCB->Test(1);
 }
 
 //_____________________________________________________________________________________

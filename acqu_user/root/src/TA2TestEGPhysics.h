@@ -1,4 +1,3 @@
-// SVN info $Id$
 #ifndef __TA2TestEGPhysics_h__
 #define __TA2TestEGPhysics_h__
 
