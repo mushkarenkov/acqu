@@ -624,7 +624,7 @@ void TA2TestEGPhysics::Reconstruct()
 //   }
 
   // Reconstruct pi0
-//   ReconstructPi0();
+  ReconstructPi0();
   
   MarkEndBuffer();
   
