@@ -863,8 +863,8 @@ Bool_t TA2TestEGPhysics::IsBgdCB(TA2Particle* p)
   // Check if the particle is CB bgd
   
 //   return p->GetE()<=50. && ( p->GetThetaDg()<=40. || p->GetThetaDg()>=140. );
-//   return p->GetThetaDg()<=40. || p->GetThetaDg()>=140.;
-  return kFALSE;
+  return p->GetThetaDg()<=40. || p->GetThetaDg()>=140.;
+//   return kFALSE;
 }
 
 //_____________________________________________________________________________________
