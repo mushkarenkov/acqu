@@ -254,6 +254,7 @@ void TA2TestEGPhysics::PostInit()
   // Charged
   fEpid = new Double_t[nMaxCB+1];
   fEcb = new Double_t[nMaxCB+1];
+  fEsim1 = new Double_t[nMaxCB+1];
   
   // Default physics initialisation
   TA2Physics::PostInit();
@@ -380,6 +381,9 @@ void TA2TestEGPhysics::LoadVariable()
   TA2DataManager::LoadVariable("Theta2",	 	&fTheta[1],		 EDSingleX);
   TA2DataManager::LoadVariable("Phi2",    	 	&fPhi[1],		 EDSingleX);
   TA2DataManager::LoadVariable("Eg",    	 	&fEg,		         EDSingleX);
+  TA2DataManager::LoadVariable("E1",    	 	&fEsim[0],	         EDSingleX);
+  TA2DataManager::LoadVariable("E2",    	 	&fEsim[1],	         EDSingleX);
+  TA2DataManager::LoadVariable("Esim1",    	 	fEsim1,		         EDMultiX);
   
   // Pi0
   TA2DataManager::LoadVariable("NggCB",    	 	&fNggCB,	         EISingleX);
@@ -408,6 +412,7 @@ void TA2TestEGPhysics::LoadVariable()
   TA2DataManager::LoadVariable("HasPi0Pol20",    	&fHasPi0Pol20,		 EISingleX);
   
   // Charged
+  TA2DataManager::LoadVariable("Nch",    	 	&fNch,		         EISingleX);
   TA2DataManager::LoadVariable("Epid",    	 	fEpid,		         EDMultiX);
   TA2DataManager::LoadVariable("Ecb",    	 	fEcb,		         EDMultiX);
 
@@ -442,6 +447,8 @@ void TA2TestEGPhysics::Reconstruct()
     fTheta[1] = TMath::ACos(*(dircos2+2))*TMath::RadToDeg();
     fPhi[0]   = TMath::ATan2(*(dircos1),*(dircos1+1))*TMath::RadToDeg();
     fPhi[1]   = TMath::ATan2(*(dircos2),*(dircos2+1))*TMath::RadToDeg();
+    fEsim[0] = *((Float_t*)(fEvent[EI_elab])+0)*1000.;
+    fEsim[1] = *((Float_t*)(fEvent[EI_elab])+1)*1000.;
   }
   
   // Cherenkov TDC
@@ -676,9 +683,9 @@ void TA2TestEGPhysics::ReconstructPi0()
     if (!tracks[i].HasPid() || !tracks[i].HasNaI() ) continue;
     fEpid[fNch] = tracks[i].GetEhitPid();
     fEcb[fNch]  = tracks[i].GetEclNaI();
+    fEsim1[fNch] = fEsim[0]-139.57018; // pi+ in case of simulated gp->npi+
     ++fNch;
   }
-  
   
   // pi0 CB-TAPS
   if (!fTAPS) return;

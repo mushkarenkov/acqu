@@ -155,6 +155,8 @@ protected:
   Double_t           fTheta[2];			// simulated theta
   Double_t           fPhi[2];			// simulated phi
   Double_t           fEg;			// incident photo energy
+  Double_t	     fEsim[2];			// simulated energy
+  Double_t          *fEsim1;			// Array of fEsim[0] to plot Epib vs Esim
   
   // Pi0 CB
   static const Int_t fNggMax = 100;
