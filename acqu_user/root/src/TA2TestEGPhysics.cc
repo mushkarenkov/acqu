@@ -637,6 +637,33 @@ void TA2TestEGPhysics::Reconstruct()
   
   //
 //   fCB->Test(1);
+  Test();
+}
+
+//_____________________________________________________________________________________
+void TA2TestEGPhysics::Test()
+{
+  // Print test output
+  
+  cout << "_______________________________________________________________" << endl;
+  cout << "Event#: " << gAN->GetNEvent() << "\tAccepted#: " << gAN->GetNEvAnalysed() << "\tDAQ#: " << gAN->GetNDAQEvent() << endl;
+  cout << "fADC[7]: " << fADC[7] << "\tfBeamPol: " << fBeamPol << endl;
+  cout << "FPDNHits: " << fFPDNHits << "\tnCB: " << fCB->GetNParticle() << "\tnTAPS: " << fTAPS->GetNParticle() << endl;
+  cout << "NPmtCB: " << fNPmtCB << "\tNRndCB: " << fNRndCB << endl;
+  cout << "HitsTaggerPmtCB: ";
+  for (Int_t i=0; i<fNPmtCB; ++i)
+  {
+    cout << fHitsTaggerPmtCB[i] << " ";
+  }
+  cout << endl;
+  cout << "HitsTaggerRndCB: ";
+  for (Int_t i=0; i<fNRndCB; ++i)
+  {
+    cout << fHitsTaggerRndCB[i] << " ";
+  }
+  cout << endl;
+  cout << "Press any key to continue / q to quit " << endl;
+  if (cin.get()=='q') gROOT->ProcessLine(".q");
 }
 
 //_____________________________________________________________________________________

@@ -219,6 +219,9 @@ public:
   
   // Pi0
   virtual void ReconstructPi0();
+  
+  // TEST
+  virtual void Test(); // Test output
 
   ClassDef(TA2TestEGPhysics,1)
 };
