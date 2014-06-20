@@ -245,6 +245,13 @@ void TA2TestEGPhysics::PostInit()
   fHitsTaggerRndTAPS   = new Int_t[nMaxTAGG+1];
   fHitsTaggerRnd       = new Int_t[nMaxTAGG+1];
   fHitsTaggerRndGood   = new Int_t[nMaxTAGG+1];
+  fHitsTaggerPmtCB2    = new Int_t[nMaxTAGG+1];
+  fHitsTaggerRndCB2    = new Int_t[nMaxTAGG+1];
+  fHitsTaggerPmtTAPS2  = new Int_t[nMaxTAGG+1];
+  fHitsTaggerRndTAPS2  = new Int_t[nMaxTAGG+1];
+  fHitsTaggerPmt2      = new Int_t[nMaxTAGG+1];
+  fHitsTaggerRnd2      = new Int_t[nMaxTAGG+1];
+  fHitsTaggerRnd3      = new Int_t[nMaxTAGG+1];
   
   // Pi0
   fMggCB = new Double_t[fNggMax+1];
@@ -355,6 +362,14 @@ void TA2TestEGPhysics::LoadVariable()
   TA2DataManager::LoadVariable("FPDHitsRndTAPS",	 fHitsTaggerRndTAPS,	 EIMultiX);
   TA2DataManager::LoadVariable("FPDHitsRndTot",		 fHitsTaggerRnd,	 EIMultiX);
   TA2DataManager::LoadVariable("FPDHitsRndTotGood",	 fHitsTaggerRndGood,	 EIMultiX);
+  TA2DataManager::LoadVariable("FPDHitsPmtCB2",		 fHitsTaggerPmtCB2,	 EIMultiX);
+  TA2DataManager::LoadVariable("FPDHitsRndCB2",   	 fHitsTaggerRndCB2,	 EIMultiX);
+  TA2DataManager::LoadVariable("FPDHitsPmtTAPS2",	 fHitsTaggerPmtTAPS2,	 EIMultiX);
+  TA2DataManager::LoadVariable("FPDHitsRndTAPS2",   	 fHitsTaggerRndTAPS2,	 EIMultiX);
+  TA2DataManager::LoadVariable("FPDHitsPmtTot2",	 fHitsTaggerPmt2,	 EIMultiX);
+  TA2DataManager::LoadVariable("FPDHitsRndTot2",   	 fHitsTaggerRnd2,	 EIMultiX);
+  TA2DataManager::LoadVariable("FPDHitsRndTot3",   	 fHitsTaggerRnd3,	 EIMultiX);
+
   //
   TA2DataManager::LoadVariable("NPmtCB",		&fNPmtCB,		 EISingleX);
   TA2DataManager::LoadVariable("NPmtCBGood",		&fNPmtCBGood,		 EISingleX);
@@ -367,6 +382,14 @@ void TA2TestEGPhysics::LoadVariable()
   TA2DataManager::LoadVariable("NRndTAPS",		&fNRndTAPS,		 EISingleX);
   TA2DataManager::LoadVariable("NRndTot",		&fNRnd,			 EISingleX);
   TA2DataManager::LoadVariable("NRndTotGood",		&fNRndGood,		 EISingleX);
+  TA2DataManager::LoadVariable("NPmtCB2",		&fNPmtCB2,		 EISingleX);
+  TA2DataManager::LoadVariable("NRndCB2",   		&fNRndCB2,		 EISingleX);
+  TA2DataManager::LoadVariable("NPmtTAPS2",		&fNPmtTAPS2,		 EISingleX);
+  TA2DataManager::LoadVariable("NRndTAPS2",   		&fNRndTAPS2,		 EISingleX);
+  TA2DataManager::LoadVariable("NPmtTot2",		&fNPmt2,		 EISingleX);
+  TA2DataManager::LoadVariable("NRndTot2",   		&fNRnd2,		 EISingleX);
+  TA2DataManager::LoadVariable("NRndTot3",   		&fNRnd3,		 EISingleX);
+  
   //
   TA2DataManager::LoadVariable("NTaggCB",		&fNTaggCB,		 EISingleX);
   TA2DataManager::LoadVariable("NTaggCBGood",		&fNTaggCBGood,		 EISingleX);
@@ -573,19 +596,31 @@ void TA2TestEGPhysics::Reconstruct()
     mapDTCBGoodTagg.clear();
     for(Int_t iCB=0; iCB<nCB; ++iCB) {
       fDTCBTaggerAll[nCBTaggerAll] = (pCB+iCB)->GetTime() - fFPDTimeOR[iTagg] + fTShiftCB;
+      // NOTE:
+      // The idea with sorted arrays works correctly only for time windows symmetric with respect to 0
+      // and random windows adjacent to the prompt one.
+      // In case of non-symmetric promt windows, prompt are underestimated (and randoms are overestimated).
+      // In case of non-adjacent random windows, randoms are underestimated.
       mapDTCBTagg[TMath::Abs(fDTCBTaggerAll[nCBTaggerAll])] = nCBTaggerAll;
       if(!IsBgdCB(pCB+iCB)) mapDTCBGoodTagg[TMath::Abs(fDTCBTaggerAll[nCBTaggerAll])] = nCBTaggerAll;
+      //
       ++nCBTaggerAll;
     }
     // all CB
     isPmtCB = isRndCB = kFALSE;
+    Int_t typeFPDhitCB = 0;
     if(!mapDTCBTagg.empty()) {
+      // Generally wrong method
       fDTCBTagger[fNTaggCB] = fDTCBTaggerAll[mapDTCBTagg.begin()->second];
       isPmtCB = IsPmtCB(fDTCBTagger[fNTaggCB]);
       isRndCB = IsRndCB(fDTCBTagger[fNTaggCB]);
       ++fNTaggCB;
       if(isPmtCB)      fHitsTaggerPmtCB[fNPmtCB++] = fFPDHits[iTagg];
       else if(isRndCB) fHitsTaggerRndCB[fNRndCB++] = fFPDHits[iTagg];
+      // Generally corect method (with uniform randoms)
+      typeFPDhitCB = TypeFPDhitCB(mapDTCBTagg);
+      if (typeFPDhitCB == 1)      fHitsTaggerPmtCB2[fNPmtCB2++] = fFPDHits[iTagg];
+      else if (typeFPDhitCB == 2) fHitsTaggerRndCB2[fNRndCB2++] = fFPDHits[iTagg];
     }
     // good CB
     isPmtCBGood = isRndCBGood = kFALSE;
@@ -600,13 +635,14 @@ void TA2TestEGPhysics::Reconstruct()
     
     //TAPS-Tagger
     mapDTTAPSTagg.clear();
-    isPmtTAPS = isRndTAPS = kFALSE;
     for(Int_t iTAPS=0; iTAPS<nTAPS; ++iTAPS) {
       fDTTAPSTaggerAll[nTAPSTaggerAll] = (pTAPS+iTAPS)->GetTime() + fFPDTimeOR[iTagg] + fTShiftTAPS;
       mapDTTAPSTagg[TMath::Abs(fDTTAPSTaggerAll[nTAPSTaggerAll])] = nTAPSTaggerAll;
       ++nTAPSTaggerAll;
     }
     // all TAPS
+    isPmtTAPS = isRndTAPS = kFALSE;
+    Int_t typeFPDhitTAPS = 0;
     if(!mapDTTAPSTagg.empty()) {
       fDTTAPSTagger[fNTaggTAPS] = fDTTAPSTaggerAll[mapDTTAPSTagg.begin()->second];
       isPmtTAPS = IsPmtTAPS(fDTTAPSTagger[fNTaggTAPS]);
@@ -614,10 +650,18 @@ void TA2TestEGPhysics::Reconstruct()
       ++fNTaggTAPS;
       if(isPmtTAPS)      fHitsTaggerPmtTAPS[fNPmtTAPS++] = fFPDHits[iTagg];
       else if(isRndTAPS) fHitsTaggerRndTAPS[fNRndTAPS++] = fFPDHits[iTagg];
+      // Generally corect method (with uniform randoms)
+      typeFPDhitTAPS = TypeFPDhitTAPS(mapDTTAPSTagg);
+      if (typeFPDhitTAPS == 1)      fHitsTaggerPmtTAPS2[fNPmtTAPS2++] = fFPDHits[iTagg];
+      else if (typeFPDhitTAPS == 2) fHitsTaggerRndTAPS2[fNRndTAPS2++] = fFPDHits[iTagg];
     }
     // CB || TAPS
-    if(isPmtCB||isPmtTAPS) fHitsTaggerPmt[fNPmt++] = fFPDHits[iTagg];
+    if(isPmtCB||isPmtTAPS)       fHitsTaggerPmt[fNPmt++] = fFPDHits[iTagg];
+    else if (isRndCB||isRndTAPS) fHitsTaggerRnd3[fNRnd3++] = fFPDHits[iTagg];
     if(isRndCB||isRndTAPS) fHitsTaggerRnd[fNRnd++] = fFPDHits[iTagg];
+    //
+    if((typeFPDhitCB==1)||(typeFPDhitTAPS==1))       fHitsTaggerPmt2[fNPmt2++] = fFPDHits[iTagg];
+    else if ((typeFPDhitCB==2)||(typeFPDhitTAPS==2)) fHitsTaggerRnd2[fNRnd2++] = fFPDHits[iTagg];
     // good CB || TAPS
     if(isPmtCBGood||isPmtTAPS) fHitsTaggerPmtGood[fNPmtGood++] = fFPDHits[iTagg];
     if(isRndCBGood||isRndTAPS) fHitsTaggerRndGood[fNRndGood++] = fFPDHits[iTagg];
@@ -637,7 +681,7 @@ void TA2TestEGPhysics::Reconstruct()
   
   //
 //   fCB->Test(1);
-  Test();
+//   Test();
 }
 
 //_____________________________________________________________________________________
@@ -975,6 +1019,44 @@ Bool_t TA2TestEGPhysics::IsRndTAPS(const Double_t &dT)
 }
 
 //_____________________________________________________________________________________
+Int_t TA2TestEGPhysics::TypeFPDhitCB(const std::map<Double_t,Int_t> &dT)
+{
+  // Returns 1 if the array dT has at least 1 prompt with CB
+  // otherwise returns 2 if the array has at least 1 randoms with CB
+  // otherwise return 0
+  
+  // default
+  Int_t type = 0;
+  
+  for (std::map<Double_t,Int_t>::const_iterator i=dT.begin(); i!=dT.end(); ++i)
+  {
+    if (IsPmtCB(i->first)) return 1;
+    if (IsRndCB(i->first)) type = 2;
+  }
+  
+  return type;
+}
+
+//_____________________________________________________________________________________
+Int_t TA2TestEGPhysics::TypeFPDhitTAPS(const std::map<Double_t,Int_t> &dT)
+{
+  // Returns 1 if the array dT has at least 1 prompt with TAPS
+  // otherwise returns 2 if the array has at least 1 randoms with TAPS
+  // otherwise return 0
+  
+  // default
+  Int_t type = 0;
+  
+  for (std::map<Double_t,Int_t>::const_iterator i=dT.begin(); i!=dT.end(); ++i)
+  {
+    if (IsPmtTAPS(i->first)) return 1;
+    if (IsRndTAPS(i->first)) type = 2;
+  }
+  
+  return type;
+}
+
+//_____________________________________________________________________________________
 void TA2TestEGPhysics::ResetEvent()
 {
   // Set default value for the variables being chenged during an event
@@ -1018,8 +1100,8 @@ void TA2TestEGPhysics::ResetEvent()
   
   //
   fNTaggCB = fNTaggCBGood = fNCBTAPS = fNTaggTAPS = 0;
-  fNPmtCB = fNPmtCBGood = fNPmtTAPS = fNPmt = fNPmtGood = 0;
-  fNRndCB = fNRndCBGood = fNRndTAPS = fNRnd = fNRndGood = 0;
+  fNPmtTAPS2 = fNPmt2 = fNPmtCB = fNPmtCB2 = fNPmtCBGood = fNPmtTAPS = fNPmt = fNPmtGood = 0;
+  fNRndTAPS2 = fNRnd2 = fNRnd3 = fNRndCB = fNRndCB2 = fNRndCBGood = fNRndTAPS = fNRnd = fNRndGood = 0;
   
   fDTCBTagger[0]     = EBufferEnd;
   fDTCBTaggerAll[0]  = EBufferEnd;
@@ -1038,6 +1120,13 @@ void TA2TestEGPhysics::ResetEvent()
   fHitsTaggerRndTAPS[0]   = EBufferEnd;
   fHitsTaggerRnd[0]       = EBufferEnd;
   fHitsTaggerRndGood[0]   = EBufferEnd;
+  fHitsTaggerPmtCB2[0]    = EBufferEnd;
+  fHitsTaggerRndCB2[0]    = EBufferEnd;
+  fHitsTaggerPmtTAPS2[0]  = EBufferEnd;
+  fHitsTaggerRndTAPS2[0]  = EBufferEnd;
+  fHitsTaggerPmt2[0]      = EBufferEnd;
+  fHitsTaggerRnd2[0]      = EBufferEnd;
+  fHitsTaggerRnd3[0]      = EBufferEnd;
   
   // Sim
   fEg = -1000.;
@@ -1087,7 +1176,14 @@ void TA2TestEGPhysics::MarkEndBuffer()
   fHitsTaggerRndTAPS[fNRndTAPS]     = EBufferEnd;
   fHitsTaggerRnd[fNRnd]             = EBufferEnd;
   fHitsTaggerRndGood[fNRndGood]     = EBufferEnd;
-  
+  fHitsTaggerPmtCB2[fNPmtCB2]       = EBufferEnd;
+  fHitsTaggerRndCB2[fNRndCB2]       = EBufferEnd;
+  fHitsTaggerPmtTAPS2[fNPmtTAPS2]   = EBufferEnd;
+  fHitsTaggerRndTAPS2[fNRndTAPS2]   = EBufferEnd;
+  fHitsTaggerPmt2[fNPmt2]           = EBufferEnd;
+  fHitsTaggerRnd2[fNRnd2]           = EBufferEnd;
+  fHitsTaggerRnd3[fNRnd3]           = EBufferEnd;
+
   // Pi0
   fMggCB[fNggCB] = EBufferEnd;
   fMggCBTAPS[fNggCBTAPS] = EBufferEnd;

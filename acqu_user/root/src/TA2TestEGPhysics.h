@@ -152,6 +152,22 @@ protected:
   Int_t              fNRnd;			// # (FPD-CB or FPD-TAPS) random hits
   Int_t              fNRndGood;			// # (FPD-CBGood or FPD-TAPS) random hits
   //
+  Int_t             *fHitsTaggerPmtCB2;
+  Int_t             *fHitsTaggerRndCB2;
+  Int_t             *fHitsTaggerPmtTAPS2;
+  Int_t             *fHitsTaggerRndTAPS2;
+  Int_t             *fHitsTaggerPmt2;
+  Int_t             *fHitsTaggerRnd2;
+  Int_t             *fHitsTaggerRnd3;
+  Int_t              fNPmtCB2;
+  Int_t              fNRndCB2;
+  Int_t              fNPmtTAPS2;
+  Int_t              fNRndTAPS2;
+  Int_t              fNPmt2;
+  Int_t              fNRnd2;
+  Int_t              fNRnd3;
+
+  //
   Double_t           fTheta[2];			// simulated theta
   Double_t           fPhi[2];			// simulated phi
   Double_t           fEg;			// incident photo energy
@@ -211,6 +227,8 @@ public:
   virtual Bool_t          IsPmtTAPS(const Double_t&);
   virtual Bool_t          IsRndTAPS(const Double_t&);
   virtual Bool_t          HasCherCoinc(const Double_t&);
+  virtual Int_t           TypeFPDhitCB(const std::map<Double_t,Int_t>&);
+  virtual Int_t           TypeFPDhitTAPS(const std::map<Double_t,Int_t>&);
   
   // Trigger
   virtual Bool_t	  TriggerProcessSW();  //Generates the trigger for the MC
